@@ -37,7 +37,7 @@ const Footer = () => {
             <li>About Us</li>
             <li>Careers</li>
             <li>Press Releases</li>
-            <li>Amazon Science</li>
+            <li>Marketplace Research</li>
           </ul>
         </div>
         <div>
@@ -51,21 +51,21 @@ const Footer = () => {
         <div>
           <h4 style={{ marginBottom: '1rem', fontWeight: 700 }}>Make Money with Us</h4>
           <ul style={{ listStyle: 'none', lineHeight: '1.8', opacity: 0.8 }}>
-            <li>Sell on Amazon</li>
-            <li>Sell under Amazon Accelerator</li>
+            <li>Sell on Multi-Vendor Marketplace</li>
+            <li>Sell under Marketplace Accelerator</li>
             <li>Protect and Build Your Brand</li>
-            <li>Amazon Global Selling</li>
+            <li>Global Selling</li>
             <li>Become an Affiliate</li>
           </ul>
         </div>
         <div>
           <h4 style={{ marginBottom: '1rem', fontWeight: 700 }}>Let Us Help You</h4>
           <ul style={{ listStyle: 'none', lineHeight: '1.8', opacity: 0.8 }}>
-            <li>COVID-19 and Amazon</li>
+            <li>COVID-19 & Marketplace</li>
             <li>Your Account</li>
             <li>Returns Centre</li>
             <li>100% Purchase Protection</li>
-            <li>Amazon App Download</li>
+            <li>Marketplace App Download</li>
             <li>Help</li>
           </ul>
         </div>
@@ -79,7 +79,7 @@ const Footer = () => {
           opacity: 0.7,
         }}
       >
-        © 1996-2026, Amazon.com, Inc. or its affiliates
+        © 1996-2026, Sridhar. Multi-Vendor Marketplace. All Rights Reserved.
       </div>
     </footer>
   );

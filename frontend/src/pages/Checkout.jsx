@@ -102,7 +102,7 @@ const Checkout = () => {
           key: 'rzp_test_placeholder', // replaced by actual key
           amount: orderRes.data.amount,
           currency: orderRes.data.currency,
-          name: 'Amazon Marketplace',
+          name: 'Multi-Vendor Marketplace',
           description: 'Payment for your order',
           order_id: orderRes.data.id,
           handler: async (response) => {

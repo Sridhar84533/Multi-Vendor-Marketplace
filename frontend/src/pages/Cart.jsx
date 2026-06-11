@@ -48,7 +48,7 @@ const Cart = () => {
       
       {items.length === 0 ? (
         <div style={{ backgroundColor: '#FFF', padding: '2rem', borderRadius: '4px', textAlign: 'center', border: '1px solid #DDD' }}>
-          <h3>Your Amazon Cart is empty.</h3>
+          <h3>Your Shopping Cart is empty.</h3>
           <p style={{ marginTop: '0.5rem' }}>Check out our newest collections to find the best items for you.</p>
           <Link to="/products" style={{ marginTop: '1.5rem', display: 'inline-block' }}>
             <button className="btn btn-primary">Shop deals of the day</button>

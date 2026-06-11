@@ -46,7 +46,7 @@ app.use('/api/chats', require('./routes/chatRoutes'));
 
 // Basic testing endpoint
 app.get('/', (req, res) => {
-  res.send('Amazon Multi-Vendor Marketplace API is running...');
+  res.send('Multi-Vendor Marketplace API is running...');
 });
 
 // Socket.io connection logic

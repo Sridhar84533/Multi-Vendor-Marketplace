@@ -1,0 +1,221 @@
+const Order = require('../models/Order');
+const Product = require('../models/Product');
+const Cart = require('../models/Cart');
+const User = require('../models/User');
+const Vendor = require('../models/Vendor');
+const LoyaltyPoints = require('../models/LoyaltyPoints');
+const path = require('path');
+const fs = require('fs');
+const { generateInvoicePDF } = require('../utils/generateInvoice');
+const { sendEmail } = require('../utils/sendEmail');
+
+// @POST /api/orders
+exports.createOrder = async (req, res) => {
+  try {
+    const {
+      items,
+      shippingAddress,
+      subtotal,
+      shippingFee,
+      tax,
+      discount,
+      loyaltyPointsUsed,
+      total,
+      couponCode,
+      paymentMethod,
+    } = req.body;
+
+    // Verify stock and update product totalSold and stock
+    for (const item of items) {
+      const product = await Product.findById(item.product);
+      if (!product) return res.status(404).json({ message: `Product ${item.title} not found` });
+      if (product.stock < item.quantity) {
+        return res.status(400).json({ message: `Not enough stock for ${item.title}` });
+      }
+      product.stock -= item.quantity;
+      product.totalSold += item.quantity;
+      await product.save();
+    }
+
+    const estimatedDelivery = new Date();
+    estimatedDelivery.setDate(estimatedDelivery.getDate() + 5); // 5 days delivery
+
+    const order = await Order.create({
+      user: req.user._id,
+      items,
+      shippingAddress,
+      subtotal,
+      shippingFee,
+      tax,
+      discount,
+      loyaltyPointsUsed,
+      total,
+      couponCode,
+      paymentMethod,
+      estimatedDelivery,
+      trackingHistory: [{ status: 'Order Placed', message: 'Your order has been placed successfully.' }],
+    });
+
+    // Handle loyalty points reduction if used
+    if (loyaltyPointsUsed > 0) {
+      await User.findByIdAndUpdate(req.user._id, { $inc: { loyaltyPoints: -loyaltyPointsUsed } });
+      await LoyaltyPoints.create({
+        user: req.user._id,
+        type: 'redeemed',
+        points: loyaltyPointsUsed,
+        description: `Redeemed points on order #${order._id}`,
+        order: order._id,
+      });
+    }
+
+    // Earn loyalty points (e.g. 1 point for every 100 Rs spent)
+    const pointsEarned = Math.floor(total / 100);
+    if (pointsEarned > 0) {
+      await User.findByIdAndUpdate(req.user._id, { $inc: { loyaltyPoints: pointsEarned } });
+      await LoyaltyPoints.create({
+        user: req.user._id,
+        type: 'earned',
+        points: pointsEarned,
+        description: `Earned points on order #${order._id}`,
+        order: order._id,
+      });
+    }
+
+    // Update vendor total sales/revenue metrics
+    for (const item of items) {
+      await Vendor.findByIdAndUpdate(item.vendor, {
+        $inc: { totalSales: item.quantity, totalRevenue: item.price * item.quantity },
+      });
+    }
+
+    // Clear user's cart
+    await Cart.findOneAndUpdate({ user: req.user._id }, { items: [] });
+
+    // Generate Invoice PDF and Send to Customer Email
+    try {
+      const invoiceDir = path.join(__dirname, '../uploads/invoices');
+      if (!fs.existsSync(invoiceDir)) {
+        fs.mkdirSync(invoiceDir, { recursive: true });
+      }
+      const invoicePath = path.join(invoiceDir, `invoice-${order._id}.pdf`);
+      await generateInvoicePDF(order, invoicePath);
+
+      await sendEmail({
+        to: req.user.email,
+        subject: `Order Invoice - INV-${order._id.toString().toUpperCase()}`,
+        text: `Hello ${req.user.name},\n\nThank you for your order! Your tax invoice is attached.\n\nTotal: Rs. ${order.total.toFixed(2)}\n\nThank you,\nMulti-Vendor Marketplace`,
+        html: `<p>Hello ${req.user.name},</p><p>Thank you for your order! Your tax invoice is attached.</p><p>Total: <strong>Rs. ${order.total.toFixed(2)}</strong></p><p>Thank you,<br/>Multi-Vendor Marketplace</p>`,
+        attachments: [
+          {
+            filename: `Invoice-${order._id}.pdf`,
+            path: invoicePath,
+          },
+        ],
+      });
+    } catch (emailErr) {
+      console.error('❌ Failed to generate or send PDF invoice email:', emailErr);
+    }
+
+    res.status(201).json(order);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @GET /api/orders
+exports.getMyOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @GET /api/orders/:id
+exports.getOrderById = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id).populate('items.product');
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+    if (order.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+    res.json(order);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @PUT /api/orders/:id/status
+exports.updateOrderStatus = async (req, res) => {
+  try {
+    const { status, message, location } = req.body;
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    order.status = status;
+    order.trackingHistory.push({ status, message, location });
+
+    if (status === 'Delivered') {
+      order.deliveredAt = new Date();
+      order.paymentStatus = 'Paid';
+    }
+
+    await order.save();
+
+    // Trigger Notification
+    const io = req.app.get('socketio');
+    if (io) {
+      io.to(order.user.toString()).emit('notification', {
+        title: `Order Status: ${status}`,
+        message: message || `Your order status has been updated to ${status}.`,
+        type: 'order',
+        link: `/orders/${order._id}`,
+      });
+    }
+
+    res.json(order);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @GET /api/orders/:id/invoice
+exports.downloadInvoice = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id).populate('user');
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    const invoiceDir = path.join(__dirname, '../uploads/invoices');
+    if (!fs.existsSync(invoiceDir)) {
+      fs.mkdirSync(invoiceDir, { recursive: true });
+    }
+
+    const invoicePath = path.join(invoiceDir, `invoice-${order._id}.pdf`);
+    await generateInvoicePDF(order, invoicePath);
+
+    res.download(invoicePath, `Invoice-${order._id}.pdf`);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @POST /api/orders/:id/return
+exports.requestReturn = async (req, res) => {
+  try {
+    const { reason } = req.body;
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    order.status = 'Return Requested';
+    order.trackingHistory.push({
+      status: 'Return Requested',
+      message: `Return requested. Reason: ${reason}`,
+    });
+
+    await order.save();
+    res.json(order);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

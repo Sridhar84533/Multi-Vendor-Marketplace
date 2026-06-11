@@ -42,7 +42,7 @@ exports.getAdminDashboard = async (req, res) => {
 // @GET /api/admin/users
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select('-password');
+    const users = await User.find().select('-password').sort({ createdAt: -1 });
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -66,7 +66,7 @@ exports.toggleUserStatus = async (req, res) => {
 // @GET /api/admin/vendors
 exports.getAllVendors = async (req, res) => {
   try {
-    const vendors = await Vendor.find().populate('user', 'name email isActive');
+    const vendors = await Vendor.find().populate('user', 'name email isActive').sort({ createdAt: -1 });
     res.json(vendors);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -86,6 +86,41 @@ exports.approveVendor = async (req, res) => {
     await User.findByIdAndUpdate(vendor.user, { role: 'vendor' });
 
     res.json({ message: 'Vendor approved successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @GET /api/admin/orders
+exports.getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @GET /api/admin/products
+exports.getAllProducts = async (req, res) => {
+  try {
+    const products = await Product.find()
+      .populate('vendor', 'shopName')
+      .sort({ createdAt: -1 });
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @DELETE /api/admin/products/:id
+exports.deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findByIdAndDelete(req.params.id);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+    res.json({ message: 'Product deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

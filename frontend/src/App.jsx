@@ -29,79 +29,139 @@ import AddProduct from './seller/AddProduct';
 import ManageProducts from './seller/ManageProducts';
 import EditProduct from './seller/EditProduct';
 
+// Admin Pages
+import AdminDashboard from './admin/AdminDashboard';
+import AdminUsers from './admin/AdminUsers';
+import AdminVendors from './admin/AdminVendors';
+import AdminOrders from './admin/AdminOrders';
+import AdminProducts from './admin/AdminProducts';
+
 import './styles/index.css';
 
-// Guard Component for Authenticated routes
+// Guard: must be logged in
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useSelector((state) => state.auth);
   if (loading) return null;
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
-// Guard Component for Vendor roles
+// Guard: must be vendor or admin
 const VendorRoute = ({ children }) => {
   const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
   if (loading) return null;
-  return isAuthenticated && (user?.role === 'vendor' || user?.role === 'admin') ? children : <Navigate to="/" />;
+  return isAuthenticated && (user?.role === 'vendor' || user?.role === 'admin')
+    ? children
+    : <Navigate to="/" />;
 };
 
-// Admin Redirect SSO Component
-const AdminRedirect = () => {
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      window.location.href = `http://localhost:5174/auth-redirect?token=${token}`;
-    } else {
-      window.location.href = `http://localhost:5174/login`;
-    }
-  }, []);
-  return null;
+// Guard: must be admin
+const AdminRoute = ({ children }) => {
+  const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
+  if (loading) return null;
+  if (!isAuthenticated) return <Navigate to="/login" />;
+  if (user?.role !== 'admin') return <Navigate to="/" />;
+  return children;
 };
+
+// Admin pages use their own full-screen layout (no Navbar/Footer wrapper)
+const AdminShell = ({ children }) => <>{children}</>;
 
 function App() {
   const dispatch = useDispatch();
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   useEffect(() => {
     dispatch(loadUser());
   }, [dispatch]);
 
+  // If the current path starts with /admin, render without Navbar & Footer
+  const isAdminPath = window.location.pathname.startsWith('/admin');
+
   return (
     <Router>
-      <div className="app-container">
-        <Navbar />
-        <main className="main-content">
-          <Routes>
-            {/* Customer Routes */}
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/products/:id" element={<ProductDetails />} />
-            
-            <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
-            <Route path="/wishlist" element={<PrivateRoute><Wishlist /></PrivateRoute>} />
-            <Route path="/checkout" element={<PrivateRoute><Checkout /></PrivateRoute>} />
-            <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
-            <Route path="/tracking/:id" element={<PrivateRoute><Tracking /></PrivateRoute>} />
-            <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-            <Route path="/dashboard" element={<PrivateRoute><UserDashboard /></PrivateRoute>} />
-            <Route path="/order-success/:id" element={<PrivateRoute><OrderSuccess /></PrivateRoute>} />
+      <Routes>
+        {/* ── Admin Routes (no Navbar / Footer) ── */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <AdminRoute>
+              <AdminUsers />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/vendors"
+          element={
+            <AdminRoute>
+              <AdminVendors />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/orders"
+          element={
+            <AdminRoute>
+              <AdminOrders />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/products"
+          element={
+            <AdminRoute>
+              <AdminProducts />
+            </AdminRoute>
+          }
+        />
 
-            {/* Seller Routes */}
-            <Route path="/seller" element={<VendorRoute><SellerDashboard /></VendorRoute>} />
-            <Route path="/seller/add-product" element={<VendorRoute><AddProduct /></VendorRoute>} />
-            <Route path="/seller/manage-products" element={<VendorRoute><ManageProducts /></VendorRoute>} />
-            <Route path="/seller/edit-product/:id" element={<VendorRoute><EditProduct /></VendorRoute>} />
+        {/* ── All other routes (with Navbar + Footer) ── */}
+        <Route
+          path="*"
+          element={
+            <div className="app-container">
+              <Navbar />
+              <main className="main-content">
+                <Routes>
+                  {/* Public */}
+                  <Route path="/" element={<Home />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/products" element={<Products />} />
+                  <Route path="/products/:id" element={<ProductDetails />} />
 
-            {/* Admin Routes */}
-            <Route path="/admin" element={<AdminRedirect />} />
+                  {/* Customer */}
+                  <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
+                  <Route path="/wishlist" element={<PrivateRoute><Wishlist /></PrivateRoute>} />
+                  <Route path="/checkout" element={<PrivateRoute><Checkout /></PrivateRoute>} />
+                  <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
+                  <Route path="/tracking/:id" element={<PrivateRoute><Tracking /></PrivateRoute>} />
+                  <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+                  <Route path="/dashboard" element={<PrivateRoute><UserDashboard /></PrivateRoute>} />
+                  <Route path="/order-success/:id" element={<PrivateRoute><OrderSuccess /></PrivateRoute>} />
 
-            {/* fallback 404 */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
+                  {/* Seller */}
+                  <Route path="/seller" element={<VendorRoute><SellerDashboard /></VendorRoute>} />
+                  <Route path="/seller/add-product" element={<VendorRoute><AddProduct /></VendorRoute>} />
+                  <Route path="/seller/manage-products" element={<VendorRoute><ManageProducts /></VendorRoute>} />
+                  <Route path="/seller/edit-product/:id" element={<VendorRoute><EditProduct /></VendorRoute>} />
+
+                  {/* 404 */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+          }
+        />
+      </Routes>
     </Router>
   );
 }

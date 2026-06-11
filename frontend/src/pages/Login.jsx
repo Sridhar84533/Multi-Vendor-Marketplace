@@ -14,7 +14,7 @@ const Login = () => {
   useEffect(() => {
     if (isAuthenticated && user) {
       if (user.role === 'admin') {
-        window.location.href = `http://localhost:5174/auth-redirect?token=${localStorage.getItem('token')}`;
+        navigate('/admin');
       } else if (user.role === 'vendor') {
         navigate('/seller');
       } else {

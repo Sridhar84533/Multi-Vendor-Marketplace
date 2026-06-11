@@ -1,6 +1,20 @@
 const Product = require('../models/Product');
 const Vendor = require('../models/Vendor');
 
+const getOrCreateVendor = async (user) => {
+  let vendor = await Vendor.findOne({ user: user._id });
+  if (!vendor) {
+    vendor = await Vendor.create({
+      user: user._id,
+      businessName: user.name + "'s Store",
+      businessEmail: user.email,
+      businessPhone: user.phone || '',
+      isApproved: true,
+    });
+  }
+  return vendor;
+};
+
 // @GET /api/products
 exports.getProducts = async (req, res) => {
   try {
@@ -87,8 +101,7 @@ exports.getProductById = async (req, res) => {
 // @POST /api/products
 exports.createProduct = async (req, res) => {
   try {
-    const vendor = await Vendor.findOne({ user: req.user._id });
-    if (!vendor) return res.status(400).json({ message: 'Vendor profile not found' });
+    const vendor = await getOrCreateVendor(req.user);
     if (!vendor.isApproved) return res.status(403).json({ message: 'Vendor not approved' });
 
     const {
@@ -156,8 +169,8 @@ exports.updateProduct = async (req, res) => {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
-    const vendor = await Vendor.findOne({ user: req.user._id });
-    if (!vendor || (product.vendor.toString() !== vendor._id.toString() && req.user.role !== 'admin')) {
+    const vendor = await getOrCreateVendor(req.user);
+    if (product.vendor.toString() !== vendor._id.toString() && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Unauthorized action' });
     }
 
@@ -221,8 +234,8 @@ exports.deleteProduct = async (req, res) => {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
-    const vendor = await Vendor.findOne({ user: req.user._id });
-    if (!vendor || (product.vendor.toString() !== vendor._id.toString() && req.user.role !== 'admin')) {
+    const vendor = await getOrCreateVendor(req.user);
+    if (product.vendor.toString() !== vendor._id.toString() && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Unauthorized action' });
     }
 

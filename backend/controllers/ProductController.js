@@ -126,10 +126,11 @@ exports.createProduct = async (req, res) => {
 
     let images = [];
     if (req.files) {
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
       images = req.files.map((file) => {
         const isLocal = !file.path.startsWith('http');
         const url = isLocal 
-          ? `http://localhost:5000/${file.path.replace(/\\/g, '/')}`
+          ? `${baseUrl}/${file.path.replace(/\\/g, '/')}`
           : file.path;
         return {
           url,
@@ -208,10 +209,11 @@ exports.updateProduct = async (req, res) => {
     if (specifications) product.specifications = typeof specifications === 'string' ? JSON.parse(specifications) : specifications;
 
     if (req.files && req.files.length > 0) {
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
       const newImages = req.files.map((file) => {
         const isLocal = !file.path.startsWith('http');
         const url = isLocal 
-          ? `http://localhost:5000/${file.path.replace(/\\/g, '/')}`
+          ? `${baseUrl}/${file.path.replace(/\\/g, '/')}`
           : file.path;
         return {
           url,

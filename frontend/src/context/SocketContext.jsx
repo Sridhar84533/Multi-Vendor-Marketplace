@@ -13,7 +13,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     let socketInstance;
     if (isAuthenticated && user) {
-      socketInstance = io(import.meta.env.VITE_SOCKET_URL || 'https://multi-vendor-marketplace-backend-4jh6.onrender.com');
+      socketInstance = io(import.meta.env.VITE_SOCKET_URL || 'https://multi-vendor-marketplace-backend-ks4m.onrender.com');
       setSocket(socketInstance);
 
       // Join room for this user

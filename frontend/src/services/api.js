@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://multi-vendor-marketplace-backend-4jh6.onrender.com/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://multi-vendor-marketplace-backend-ks4m.onrender.com/api',
 });
 
 // Automatically inject JWT Bearer Token if available in localStorage

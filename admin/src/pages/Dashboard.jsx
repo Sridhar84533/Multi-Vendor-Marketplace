@@ -69,7 +69,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '2rem' }}>
+      <div className="dashboard-sections-grid">
         {/* Pending Approvals */}
         <section className="card">
           <h2 className="card-title">

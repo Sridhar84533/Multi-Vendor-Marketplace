@@ -91,32 +91,36 @@ exports.createOrder = async (req, res) => {
     // Clear user's cart
     await Cart.findOneAndUpdate({ user: req.user._id }, { items: [] });
 
-    // Generate Invoice PDF and Send to Customer Email
-    try {
-      const invoiceDir = path.join(__dirname, '../uploads/invoices');
-      if (!fs.existsSync(invoiceDir)) {
-        fs.mkdirSync(invoiceDir, { recursive: true });
-      }
-      const invoicePath = path.join(invoiceDir, `invoice-${order._id}.pdf`);
-      await generateInvoicePDF(order, invoicePath);
-
-      await sendEmail({
-        to: req.user.email,
-        subject: `Order Invoice - INV-${order._id.toString().toUpperCase()}`,
-        text: `Hello ${req.user.name},\n\nThank you for your order! Your tax invoice is attached.\n\nTotal: Rs. ${order.total.toFixed(2)}\n\nThank you,\nMulti-Vendor Marketplace`,
-        html: `<p>Hello ${req.user.name},</p><p>Thank you for your order! Your tax invoice is attached.</p><p>Total: <strong>Rs. ${order.total.toFixed(2)}</strong></p><p>Thank you,<br/>Multi-Vendor Marketplace</p>`,
-        attachments: [
-          {
-            filename: `Invoice-${order._id}.pdf`,
-            path: invoicePath,
-          },
-        ],
-      });
-    } catch (emailErr) {
-      console.error('❌ Failed to generate or send PDF invoice email:', emailErr);
-    }
-
+    // Respond immediately — do NOT await email/PDF (fire-and-forget)
     res.status(201).json(order);
+
+    // Generate Invoice PDF and Send to Customer Email in background
+    setImmediate(async () => {
+      try {
+        const invoiceDir = path.join(__dirname, '../uploads/invoices');
+        if (!fs.existsSync(invoiceDir)) {
+          fs.mkdirSync(invoiceDir, { recursive: true });
+        }
+        const invoicePath = path.join(invoiceDir, `invoice-${order._id}.pdf`);
+        await generateInvoicePDF(order, invoicePath);
+
+        await sendEmail({
+          to: req.user.email,
+          subject: `Order Invoice - INV-${order._id.toString().toUpperCase()}`,
+          text: `Hello ${req.user.name},\n\nThank you for your order! Your tax invoice is attached.\n\nTotal: Rs. ${order.total.toFixed(2)}\n\nThank you,\nMulti-Vendor Marketplace`,
+          html: `<p>Hello ${req.user.name},</p><p>Thank you for your order! Your tax invoice is attached.</p><p>Total: <strong>Rs. ${order.total.toFixed(2)}</strong></p><p>Thank you,<br/>Multi-Vendor Marketplace</p>`,
+          attachments: [
+            {
+              filename: `Invoice-${order._id}.pdf`,
+              path: invoicePath,
+            },
+          ],
+        });
+        console.log(`✅ Invoice email sent for order ${order._id}`);
+      } catch (emailErr) {
+        console.error('❌ Failed to generate or send PDF invoice email:', emailErr);
+      }
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

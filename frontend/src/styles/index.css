@@ -220,7 +220,7 @@ a {
 /* Product Card Grid */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
   gap: 1.5rem;
   margin-top: 1.5rem;
 }
@@ -409,7 +409,7 @@ a {
 /* Dashboard Grid */
 .dashboard-layout {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 260px minmax(0, 1fr);
   gap: 1.5rem;
   min-height: calc(100vh - 100px);
 }
@@ -451,7 +451,7 @@ a {
 /* Analytics Stats Grid */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
@@ -569,4 +569,108 @@ a {
   border: none;
   padding: 0.5rem;
   outline: none;
+}
+
+@media (max-width: 1024px) {
+  .product-details-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .navbar {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+  }
+  .navbar-logo {
+    order: 1;
+    font-size: 1.2rem;
+  }
+  .navbar-nav {
+    order: 2;
+    margin-left: auto;
+    gap: 0.75rem;
+  }
+  .navbar-search-container {
+    order: 3;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 0.25rem;
+  }
+  .container {
+    padding: 1rem;
+  }
+  .timeline {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding-left: 1rem;
+  }
+  .timeline::before {
+    top: 0;
+    bottom: 0;
+    left: 20px;
+    width: 4px;
+    height: 100%;
+    transform: none;
+  }
+  .timeline-step {
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    padding: 0;
+    background-color: transparent;
+  }
+  .timeline-dot {
+    border-width: 3px;
+  }
+  .timeline-label {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .zoom-image-container {
+    height: 300px;
+  }
+  .product-details-container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  .card {
+    padding: 1rem;
+  }
+  .price-actual {
+    font-size: 1.15rem;
+  }
+}
+
+/* ── Checkout Page Responsive Grid ── */
+.checkout-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .checkout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Spinner keyframe (used in checkout button) ── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Mock Payment Modal Responsive ── */
+@media (max-width: 480px) {
+  .mock-payment-modal {
+    padding: 0.5rem;
+  }
 }

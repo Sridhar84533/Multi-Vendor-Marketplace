@@ -175,7 +175,7 @@ a {
 /* Stats Cards */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: 1.5rem;
 }
 
@@ -432,4 +432,82 @@ a {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Responsive media queries for admin layout */
+.dashboard-sections-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-sections-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+  .admin-sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    border-right: none;
+    border-bottom: 1px solid var(--bg-dark-light);
+  }
+  .sidebar-header {
+    padding: 0.5rem 0;
+    border-bottom: none;
+  }
+  .sidebar-menu {
+    flex-direction: row;
+    padding: 0;
+    margin: 0;
+    gap: 0.25rem;
+    flex-grow: 0;
+  }
+  .sidebar-menu-item a {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+  }
+  .sidebar-menu-item.active a {
+    border-left-color: transparent;
+    border-bottom-color: var(--primary);
+  }
+  .sidebar-footer {
+    display: none;
+  }
+  .admin-header {
+    padding: 0 1rem;
+  }
+  .page-container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .admin-header {
+    height: auto;
+    padding: 0.75rem 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  .user-profile {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .card {
+    padding: 1rem;
+  }
 }

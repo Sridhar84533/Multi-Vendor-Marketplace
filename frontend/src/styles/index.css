@@ -845,11 +845,9 @@ img {
 }
 
 /* ── Vendor Navbar Styling ── */
-@media (min-width: 769px) {
-  .navbar.navbar-vendor {
-    justify-content: flex-start;
-  }
-  .navbar.navbar-vendor .navbar-nav {
-    margin-left: 2rem;
-  }
+.navbar.navbar-vendor {
+  justify-content: flex-start !important;
+}
+.navbar.navbar-vendor .navbar-nav {
+  margin-left: 2rem !important;
 }

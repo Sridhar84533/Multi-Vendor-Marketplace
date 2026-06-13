@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import API from '../services/api';
 import Loader from '../components/Loader/Loader';
-import { IndianRupee, ShoppingBag, Heart, User, MapPin, Award, ArrowRight, Package } from 'lucide-react';
+import { IndianRupee, ShoppingBag, Heart, User, MapPin, Award, ArrowRight, Package, LayoutDashboard, PlusCircle } from 'lucide-react';
 
 const UserDashboard = () => {
   const navigate = useNavigate();

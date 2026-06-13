@@ -54,9 +54,9 @@ const AdminUsers = () => {
 
   const roleBadge = (role) => {
     const map = {
-      admin: { bg: '#6366f120', color: '#a5b4fc', border: '#6366f140', label: 'Admin' },
-      vendor: { bg: '#8b5cf620', color: '#c4b5fd', border: '#8b5cf640', label: 'Vendor' },
-      customer: { bg: '#06b6d420', color: '#67e8f9', border: '#06b6d440', label: 'Customer' },
+      admin: { bg: '#2563eb15', color: '#2563eb', border: '#2563eb30', label: 'Admin' },
+      vendor: { bg: '#7c3aed15', color: '#7c3aed', border: '#7c3aed30', label: 'Vendor' },
+      customer: { bg: '#0891b215', color: '#0891b2', border: '#0891b230', label: 'Customer' },
     };
     const s = map[role] || { bg: '#94a3b820', color: '#94a3b8', border: '#94a3b840', label: role };
     return (
@@ -82,8 +82,8 @@ const AdminUsers = () => {
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <h1 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#f1f5f9' }}>User Management</h1>
-            <p style={{ color: '#64748b', fontSize: '0.9rem', marginTop: '0.25rem' }}>
+            <h1 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#111827' }}>User Management</h1>
+            <p style={{ color: '#4b5563', fontSize: '0.9rem', marginTop: '0.25rem' }}>
               {filtered.length} of {users.length} users
             </p>
           </div>
@@ -94,10 +94,10 @@ const AdminUsers = () => {
               alignItems: 'center',
               gap: '6px',
               padding: '0.6rem 1.2rem',
-              background: 'rgba(99,102,241,0.15)',
-              border: '1px solid rgba(99,102,241,0.3)',
+              background: '#eff6ff',
+              border: '1px solid #bfdbfe',
               borderRadius: '10px',
-              color: '#a5b4fc',
+              color: '#2563eb',
               cursor: 'pointer',
               fontSize: '0.85rem',
               fontWeight: 600,
@@ -117,13 +117,13 @@ const AdminUsers = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              background: '#1e293b',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: '#ffffff',
+              border: '1px solid #e5e7eb',
               borderRadius: '10px',
               padding: '0.6rem 1rem',
             }}
           >
-            <Search size={16} color="#475569" />
+            <Search size={16} color="#9ca3af" />
             <input
               placeholder="Search by name or email..."
               value={search}
@@ -133,7 +133,7 @@ const AdminUsers = () => {
                 background: 'none',
                 border: 'none',
                 outline: 'none',
-                color: '#e2e8f0',
+                color: '#111827',
                 fontSize: '0.88rem',
               }}
             />
@@ -143,10 +143,10 @@ const AdminUsers = () => {
             onChange={(e) => setRoleFilter(e.target.value)}
             style={{
               padding: '0.6rem 1.2rem',
-              background: '#1e293b',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: '#ffffff',
+              border: '1px solid #e5e7eb',
               borderRadius: '10px',
-              color: '#e2e8f0',
+              color: '#111827',
               cursor: 'pointer',
               fontSize: '0.88rem',
             }}
@@ -161,28 +161,29 @@ const AdminUsers = () => {
         {/* Table */}
         <div
           style={{
-            background: '#1e293b',
-            border: '1px solid rgba(255,255,255,0.07)',
+            background: '#ffffff',
+            border: '1px solid #e5e7eb',
             borderRadius: '16px',
             overflow: 'hidden',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
           }}
         >
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '4rem', color: '#64748b' }}>Loading users...</div>
+            <div style={{ textAlign: 'center', padding: '4rem', color: '#4b5563' }}>Loading users...</div>
           ) : filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '4rem', color: '#64748b' }}>No users found.</div>
+            <div style={{ textAlign: 'center', padding: '4rem', color: '#4b5563' }}>No users found.</div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)' }}>
+                  <tr style={{ borderBottom: '1px solid #e5e7eb', background: '#f9fafb' }}>
                     {['User', 'Email', 'Role', 'Status', 'Joined', 'Actions'].map((h) => (
                       <th
                         key={h}
                         style={{
                           padding: '0.9rem 1rem',
                           textAlign: 'left',
-                          color: '#475569',
+                          color: '#4b5563',
                           fontWeight: 600,
                           fontSize: '0.78rem',
                           textTransform: 'uppercase',
@@ -199,10 +200,10 @@ const AdminUsers = () => {
                     <tr
                       key={user._id}
                       style={{
-                        borderBottom: '1px solid rgba(255,255,255,0.05)',
+                        borderBottom: '1px solid #f3f4f6',
                         transition: 'background 0.15s',
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = '#f9fafb')}
                       onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                     >
                       <td style={{ padding: '0.9rem 1rem' }}>
@@ -212,7 +213,7 @@ const AdminUsers = () => {
                               width: '34px',
                               height: '34px',
                               borderRadius: '50%',
-                              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                              background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -224,27 +225,27 @@ const AdminUsers = () => {
                           >
                             {user.name?.[0]?.toUpperCase()}
                           </div>
-                          <span style={{ color: '#e2e8f0', fontWeight: 500 }}>{user.name}</span>
+                          <span style={{ color: '#111827', fontWeight: 500 }}>{user.name}</span>
                         </div>
                       </td>
-                      <td style={{ padding: '0.9rem 1rem', color: '#94a3b8' }}>{user.email}</td>
+                      <td style={{ padding: '0.9rem 1rem', color: '#4b5563' }}>{user.email}</td>
                       <td style={{ padding: '0.9rem 1rem' }}>{roleBadge(user.role)}</td>
                       <td style={{ padding: '0.9rem 1rem' }}>
                         <span
-                          style={{
+                           style={{
                             padding: '2px 10px',
                             borderRadius: '20px',
                             fontSize: '0.75rem',
                             fontWeight: 600,
                             background: user.isActive ? '#10b98120' : '#ef444420',
-                            color: user.isActive ? '#10b981' : '#f87171',
+                            color: user.isActive ? '#10b981' : '#ef4444',
                             border: `1px solid ${user.isActive ? '#10b98140' : '#ef444440'}`,
                           }}
                         >
                           {user.isActive ? 'Active' : 'Blocked'}
                         </span>
                       </td>
-                      <td style={{ padding: '0.9rem 1rem', color: '#64748b', fontSize: '0.8rem' }}>
+                      <td style={{ padding: '0.9rem 1rem', color: '#4b5563', fontSize: '0.8rem' }}>
                         {new Date(user.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
                       </td>
                       <td style={{ padding: '0.9rem 1rem' }}>
@@ -260,7 +261,7 @@ const AdminUsers = () => {
                               borderRadius: '8px',
                               background: user.isActive ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)',
                               border: `1px solid ${user.isActive ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`,
-                              color: user.isActive ? '#f87171' : '#10b981',
+                              color: user.isActive ? '#ef4444' : '#10b981',
                               cursor: 'pointer',
                               fontSize: '0.78rem',
                               fontWeight: 600,
@@ -272,7 +273,7 @@ const AdminUsers = () => {
                           </button>
                         )}
                         {user.role === 'admin' && (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#6366f1', fontSize: '0.78rem' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#2563eb', fontSize: '0.78rem' }}>
                             <ShieldCheck size={14} /> Protected
                           </span>
                         )}

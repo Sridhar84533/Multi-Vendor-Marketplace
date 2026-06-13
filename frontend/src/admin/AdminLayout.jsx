@@ -41,14 +41,14 @@ const AdminLayout = ({ children }) => {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#0f172a', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f8f9fa', fontFamily: 'Inter, sans-serif' }}>
       {/* Sidebar */}
       <aside
         style={{
           width: sidebarOpen ? '260px' : '72px',
           minHeight: '100vh',
-          background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
-          borderRight: '1px solid rgba(255,255,255,0.06)',
+          background: '#ffffff',
+          borderRight: '1px solid #e5e7eb',
           display: 'flex',
           flexDirection: 'column',
           transition: 'width 0.3s ease',
@@ -65,14 +65,14 @@ const AdminLayout = ({ children }) => {
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            borderBottom: '1px solid #e5e7eb',
           }}
         >
           <div
             style={{
               width: '36px',
               height: '36px',
-              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+              background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
               borderRadius: '10px',
               display: 'flex',
               alignItems: 'center',
@@ -84,10 +84,10 @@ const AdminLayout = ({ children }) => {
           </div>
           {sidebarOpen && (
             <div>
-              <div style={{ color: '#f1f5f9', fontWeight: 700, fontSize: '1rem', lineHeight: 1.2 }}>
+              <div style={{ color: '#111827', fontWeight: 700, fontSize: '1rem', lineHeight: 1.2 }}>
                 Admin Panel
               </div>
-              <div style={{ color: '#64748b', fontSize: '0.72rem' }}>Multi-Vendor Marketplace</div>
+              <div style={{ color: '#4b5563', fontSize: '0.72rem' }}>Multi-Vendor Marketplace</div>
             </div>
           )}
           <button
@@ -96,7 +96,7 @@ const AdminLayout = ({ children }) => {
               marginLeft: 'auto',
               background: 'none',
               border: 'none',
-              color: '#94a3b8',
+              color: '#4b5563',
               cursor: 'pointer',
               padding: '4px',
               display: 'flex',
@@ -124,10 +124,10 @@ const AdminLayout = ({ children }) => {
                   borderRadius: '10px',
                   textDecoration: 'none',
                   background: active
-                    ? 'linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.15))'
+                    ? '#eff6ff'
                     : 'transparent',
-                  border: active ? '1px solid rgba(99,102,241,0.3)' : '1px solid transparent',
-                  color: active ? '#a5b4fc' : '#94a3b8',
+                  border: active ? '1px solid #bfdbfe' : '1px solid transparent',
+                  color: active ? '#2563eb' : '#4b5563',
                   fontWeight: active ? 600 : 400,
                   fontSize: '0.9rem',
                   transition: 'all 0.2s',
@@ -135,10 +135,16 @@ const AdminLayout = ({ children }) => {
                   overflow: 'hidden',
                 }}
                 onMouseEnter={(e) => {
-                  if (!active) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                  if (!active) {
+                    e.currentTarget.style.backgroundColor = '#f3f4f6';
+                    e.currentTarget.style.color = '#111827';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  if (!active) e.currentTarget.style.backgroundColor = 'transparent';
+                  if (!active) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#4b5563';
+                  }
                 }}
               >
                 <item.icon size={18} style={{ flexShrink: 0 }} />
@@ -153,7 +159,7 @@ const AdminLayout = ({ children }) => {
         <div
           style={{
             padding: '1rem 0.75rem',
-            borderTop: '1px solid rgba(255,255,255,0.08)',
+            borderTop: '1px solid #e5e7eb',
           }}
         >
           <div
@@ -163,7 +169,7 @@ const AdminLayout = ({ children }) => {
               gap: '10px',
               padding: '0.75rem',
               borderRadius: '10px',
-              background: 'rgba(255,255,255,0.04)',
+              background: '#f3f4f6',
               marginBottom: '0.5rem',
               overflow: 'hidden',
             }}
@@ -172,7 +178,7 @@ const AdminLayout = ({ children }) => {
               style={{
                 width: '32px',
                 height: '32px',
-                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
@@ -187,10 +193,10 @@ const AdminLayout = ({ children }) => {
             </div>
             {sidebarOpen && (
               <div style={{ overflow: 'hidden' }}>
-                <div style={{ color: '#e2e8f0', fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ color: '#111827', fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {user?.name}
                 </div>
-                <div style={{ color: '#6366f1', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase' }}>Administrator</div>
+                <div style={{ color: '#2563eb', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase' }}>Administrator</div>
               </div>
             )}
           </div>
@@ -204,8 +210,8 @@ const AdminLayout = ({ children }) => {
               padding: '0.6rem 0.85rem',
               borderRadius: '8px',
               background: 'none',
-              border: '1px solid rgba(239,68,68,0.25)',
-              color: '#f87171',
+              border: '1px solid rgba(239,68,68,0.4)',
+              color: '#ef4444',
               cursor: 'pointer',
               fontSize: '0.85rem',
               fontWeight: 500,
@@ -213,7 +219,7 @@ const AdminLayout = ({ children }) => {
               whiteSpace: 'nowrap',
               overflow: 'hidden',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(239,68,68,0.1)')}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(239,68,68,0.05)')}
             onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
           >
             <LogOut size={16} style={{ flexShrink: 0 }} />
@@ -227,8 +233,8 @@ const AdminLayout = ({ children }) => {
         {/* Topbar */}
         <header
           style={{
-            backgroundColor: '#1e293b',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            backgroundColor: '#ffffff',
+            borderBottom: '1px solid #e5e7eb',
             padding: '1rem 2rem',
             display: 'flex',
             alignItems: 'center',
@@ -238,12 +244,12 @@ const AdminLayout = ({ children }) => {
             zIndex: 10,
           }}
         >
-          <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
-            <span style={{ color: '#6366f1' }}>Admin</span>
+          <div style={{ color: '#4b5563', fontSize: '0.85rem' }}>
+            <span style={{ color: '#2563eb', fontWeight: 500 }}>Admin</span>
             {location.pathname !== '/admin' && (
               <>
                 <span style={{ margin: '0 6px' }}>/</span>
-                <span style={{ color: '#e2e8f0', textTransform: 'capitalize' }}>
+                <span style={{ color: '#111827', textTransform: 'capitalize', fontWeight: 500 }}>
                   {location.pathname.split('/').pop()}
                 </span>
               </>
@@ -253,10 +259,10 @@ const AdminLayout = ({ children }) => {
             <div
               style={{
                 padding: '4px 12px',
-                background: 'rgba(99,102,241,0.15)',
-                border: '1px solid rgba(99,102,241,0.3)',
+                background: 'rgba(16,185,129,0.1)',
+                border: '1px solid rgba(16,185,129,0.3)',
                 borderRadius: '20px',
-                color: '#a5b4fc',
+                color: '#10b981',
                 fontSize: '0.78rem',
                 fontWeight: 600,
               }}
@@ -267,7 +273,7 @@ const AdminLayout = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main style={{ flex: 1, padding: '2rem', color: '#e2e8f0' }}>{children}</main>
+        <main style={{ flex: 1, padding: '2rem', color: '#111827' }}>{children}</main>
       </div>
     </div>
   );

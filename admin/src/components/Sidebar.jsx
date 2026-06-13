@@ -18,20 +18,20 @@ const Sidebar = () => {
       </div>
       
       <ul className="sidebar-menu">
-        <li className="sidebar-menu-item">
-          <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'active' : ''}>
+        <li>
+          <NavLink to="/dashboard" className={({ isActive }) => `sidebar-menu-item${isActive ? ' active' : ''}`}>
             <LayoutDashboard size={18} />
             Overview
           </NavLink>
         </li>
-        <li className="sidebar-menu-item">
-          <NavLink to="/users" className={({ isActive }) => isActive ? 'active' : ''}>
+        <li>
+          <NavLink to="/users" className={({ isActive }) => `sidebar-menu-item${isActive ? ' active' : ''}`}>
             <Users size={18} />
             User Management
           </NavLink>
         </li>
-        <li className="sidebar-menu-item">
-          <NavLink to="/vendors" className={({ isActive }) => isActive ? 'active' : ''}>
+        <li>
+          <NavLink to="/vendors" className={({ isActive }) => `sidebar-menu-item${isActive ? ' active' : ''}`}>
             <ShieldAlert size={18} />
             Vendor Approvals
           </NavLink>

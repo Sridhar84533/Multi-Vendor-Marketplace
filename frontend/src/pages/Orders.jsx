@@ -126,26 +126,29 @@ const Orders = () => {
                   Status: {order.status}
                 </h3>
 
-                {order.items.map((item, idx) => (
-                  <div key={idx} style={{ display: 'flex', gap: '1.5rem', marginBottom: idx < order.items.length - 1 ? '1.5rem' : 0 }}>
-                    <img src={item.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500'} alt={item.title} style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
-                    <div style={{ flexGrow: 1 }}>
-                      <Link to={`/products/${item.product}`} style={{ fontWeight: 600, color: '#007185' }}>
-                        {item.title}
-                      </Link>
-                      <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        Price: Rs. {item.price} | Qty: {item.quantity}
-                      </span>
-                      {order.status === 'Delivered' && (
-                        <Link to={`/products/${item.product}`} style={{ display: 'inline-block', marginTop: '8px' }}>
-                          <button className="btn btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}>
-                            Write a product review
-                          </button>
+                {order.items.map((item, idx) => {
+                  const imgUrl = item.product?.images?.[0]?.url || item.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500';
+                  return (
+                    <div key={idx} style={{ display: 'flex', gap: '1.5rem', marginBottom: idx < order.items.length - 1 ? '1.5rem' : 0 }}>
+                      <img src={imgUrl} alt={item.title} style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
+                      <div style={{ flexGrow: 1 }}>
+                        <Link to={`/products/${item.product}`} style={{ fontWeight: 600, color: '#007185' }}>
+                          {item.title}
                         </Link>
-                      )}
+                        <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                          Price: Rs. {item.price} | Qty: {item.quantity}
+                        </span>
+                        {order.status === 'Delivered' && (
+                          <Link to={`/products/${item.product}`} style={{ display: 'inline-block', marginTop: '8px' }}>
+                            <button className="btn btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}>
+                              Write a product review
+                            </button>
+                          </Link>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 <hr style={{ margin: '1.5rem 0', borderColor: '#EEE' }} />
 

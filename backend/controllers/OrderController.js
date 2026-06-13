@@ -4,6 +4,7 @@ const Cart = require('../models/Cart');
 const User = require('../models/User');
 const Vendor = require('../models/Vendor');
 const LoyaltyPoints = require('../models/LoyaltyPoints');
+const Notification = require('../models/Notification');
 const path = require('path');
 const fs = require('fs');
 const { generateInvoicePDF } = require('../utils/generateInvoice');
@@ -129,7 +130,9 @@ exports.createOrder = async (req, res) => {
 // @GET /api/orders
 exports.getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+    const orders = await Order.find({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .populate('items.product', 'title images price discountPrice');
     res.json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -208,7 +211,7 @@ exports.downloadInvoice = async (req, res) => {
 exports.requestReturn = async (req, res) => {
   try {
     const { reason } = req.body;
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findById(req.params.id).populate('user', 'name');
     if (!order) return res.status(404).json({ message: 'Order not found' });
 
     order.status = 'Return Requested';
@@ -219,6 +222,41 @@ exports.requestReturn = async (req, res) => {
 
     await order.save();
     res.json(order);
+
+    // Notify each unique vendor involved in this order (fire and forget)
+    setImmediate(async () => {
+      try {
+        const io = req.app.get('socketio');
+        // Get unique vendor IDs from order items
+        const vendorIds = [...new Set(order.items.map(i => i.vendor?.toString()).filter(Boolean))];
+
+        for (const vendorId of vendorIds) {
+          const vendor = await Vendor.findById(vendorId);
+          if (!vendor) continue;
+
+          // Save a persistent notification for the vendor's user account
+          const notification = await Notification.create({
+            user: vendor.user,
+            title: '⚠️ Return/Replacement Requested',
+            message: `Customer ${order.user?.name || 'A customer'} has requested a return for Order #${order._id}. Reason: ${reason}`,
+            type: 'order',
+            link: '/seller',
+          });
+
+          // Real-time push to vendor via Socket.io
+          if (io) {
+            io.to(vendor.user.toString()).emit('notification', {
+              title: notification.title,
+              message: notification.message,
+              type: 'order',
+              link: '/seller',
+            });
+          }
+        }
+      } catch (notifErr) {
+        console.error('Failed to send return notification to vendor:', notifErr);
+      }
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

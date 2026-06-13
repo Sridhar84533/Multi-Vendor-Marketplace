@@ -13,6 +13,17 @@ const UserDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (user) {
+      if (user.role === 'vendor') {
+        navigate('/seller');
+        return;
+      }
+      if (user.role === 'admin') {
+        navigate('/admin');
+        return;
+      }
+    }
+
     const fetchDashboardDetails = async () => {
       try {
         const [ordersRes, userRes] = await Promise.all([
@@ -30,7 +41,7 @@ const UserDashboard = () => {
       }
     };
     fetchDashboardDetails();
-  }, []);
+  }, [user, navigate]);
 
   if (loading) return <Loader />;
 
@@ -158,13 +169,16 @@ const UserDashboard = () => {
 
                   <div style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {order.items.map((item, index) => (
-                        <div key={index} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                          <img src={item.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500'} alt={item.title} style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
-                          <span style={{ fontSize: '0.85rem', fontWeight: 500, color: '#007185' }}>{item.title}</span>
-                          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>(x{item.quantity})</span>
-                        </div>
-                      ))}
+                      {order.items.map((item, index) => {
+                        const imgUrl = item.product?.images?.[0]?.url || item.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500';
+                        return (
+                          <div key={index} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <img src={imgUrl} alt={item.title} style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+                            <span style={{ fontSize: '0.85rem', fontWeight: 500, color: '#007185' }}>{item.title}</span>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>(x{item.quantity})</span>
+                          </div>
+                        );
+                      })}
                     </div>
 
                     <button 

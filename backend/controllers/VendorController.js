@@ -68,6 +68,9 @@ exports.getVendorDashboard = async (req, res) => {
       });
     });
 
+    const returnOrders = orders.filter(o => o.status === 'Return Requested');
+    const normalOrders = orders.filter(o => o.status !== 'Return Requested').slice(0, 5);
+
     res.json({
       profile: vendor,
       analytics: {
@@ -76,7 +79,7 @@ exports.getVendorDashboard = async (req, res) => {
         revenue: vendorRevenue,
         itemsSold,
       },
-      recentOrders: orders.slice(0, 5),
+      recentOrders: [...returnOrders, ...normalOrders],
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

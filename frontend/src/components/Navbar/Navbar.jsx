@@ -50,10 +50,12 @@ const Navbar = () => {
               </Link>
             )}
 
-            <Link to="/orders" className="nav-link">
-              <span className="nav-line-1">Returns</span>
-              <span className="nav-line-2">& Orders</span>
-            </Link>
+            {user?.role !== 'vendor' && (
+              <Link to="/orders" className="nav-link">
+                <span className="nav-line-1">Returns</span>
+                <span className="nav-line-2">& Orders</span>
+              </Link>
+            )}
 
             <div className="nav-link" style={{ position: 'relative' }} onClick={() => setShowNotifications(!showNotifications)}>
               <span className="nav-line-1">Alerts</span>

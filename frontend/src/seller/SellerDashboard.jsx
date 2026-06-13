@@ -1,9 +1,240 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import Loader from '../components/Loader/Loader';
-import { LayoutDashboard, ShoppingBag, PlusCircle, IndianRupee, AlertTriangle, CheckCircle, XCircle, Package, TrendingUp } from 'lucide-react';
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  PlusCircle,
+  IndianRupee,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Package,
+  Send,
+  MessageSquare,
+  RotateCcw,
+  TrendingUp,
+  Box,
+} from 'lucide-react';
 
+/* ─────────────────────────────────────────────────────────────
+   Helper: resolve the best image URL from an order item
+───────────────────────────────────────────────────────────── */
+const getItemImg = (item) =>
+  item?.product?.images?.[0]?.url || item?.image || null;
+
+/* ─────────────────────────────────────────────────────────────
+   Return Request Card
+───────────────────────────────────────────────────────────── */
+const ReturnCard = ({ order, onAction, onReply }) => {
+  const [reply, setReply] = useState(order.vendorReply || '');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(!!order.vendorReply);
+
+  const handleSend = async () => {
+    if (!reply.trim()) return;
+    setSending(true);
+    await onReply(order._id, reply);
+    setSending(false);
+    setSent(true);
+  };
+
+  return (
+    <div
+      style={{
+        background: '#fff',
+        border: '1.5px solid #FBBF24',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)',
+          padding: '0.85rem 1.2rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.5rem',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <RotateCcw size={16} color="#B45309" />
+          <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#92400E' }}>
+            Return Request · Order #{order._id.slice(-8).toUpperCase()}
+          </span>
+        </div>
+        <span style={{ fontSize: '0.8rem', color: '#78350F' }}>
+          Customer: <strong>{order.user?.name || 'Unknown'}</strong>
+        </span>
+      </div>
+
+      <div style={{ padding: '1rem 1.2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {/* Product items */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {order.items.map((item, idx) => {
+            const imgUrl = getItemImg(item);
+            return (
+              <div
+                key={idx}
+                style={{
+                  display: 'flex',
+                  gap: '12px',
+                  alignItems: 'center',
+                  padding: '0.7rem',
+                  background: '#FAFAFA',
+                  borderRadius: '8px',
+                  border: '1px solid #EEE',
+                }}
+              >
+                {/* Product image */}
+                {imgUrl ? (
+                  <img
+                    src={imgUrl}
+                    alt={item.title}
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      objectFit: 'contain',
+                      borderRadius: '6px',
+                      border: '1px solid #E5E7EB',
+                      background: '#fff',
+                      flexShrink: 0,
+                    }}
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '6px',
+                      background: '#F3F4F6',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Box size={22} color="#9CA3AF" />
+                  </div>
+                )}
+
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontWeight: 600, fontSize: '0.9rem', margin: 0, color: '#111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {item.title}
+                  </p>
+                  <p style={{ fontSize: '0.8rem', color: '#6B7280', margin: '2px 0 0' }}>
+                    Qty: {item.quantity} &nbsp;·&nbsp; Rs. {(item.price * item.quantity).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Return reason */}
+        {order.returnReason && (
+          <div
+            style={{
+              background: '#FFF5F5',
+              border: '1px solid #FCA5A5',
+              borderRadius: '8px',
+              padding: '0.75rem 1rem',
+            }}
+          >
+            <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#B91C1C', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Customer's Return Reason
+            </p>
+            <p style={{ fontSize: '0.9rem', color: '#374151', margin: 0 }}>{order.returnReason}</p>
+          </div>
+        )}
+
+        {/* Vendor reply box */}
+        <div>
+          <label style={{ fontSize: '0.82rem', fontWeight: 700, color: '#374151', display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '6px' }}>
+            <MessageSquare size={14} color="#6366F1" /> Your Reply to Customer
+          </label>
+          <textarea
+            value={reply}
+            onChange={(e) => { setReply(e.target.value); setSent(false); }}
+            rows={3}
+            placeholder="e.g. Thank you for reaching out. We have approved your return. Please ship the product to our address…"
+            style={{
+              width: '100%',
+              padding: '0.6rem 0.8rem',
+              border: '1.5px solid #D1D5DB',
+              borderRadius: '8px',
+              fontSize: '0.88rem',
+              fontFamily: 'inherit',
+              resize: 'vertical',
+              outline: 'none',
+              boxSizing: 'border-box',
+              color: '#111',
+              lineHeight: 1.5,
+            }}
+          />
+          <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
+            <button
+              onClick={handleSend}
+              disabled={sending || !reply.trim()}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '0.45rem 1rem',
+                background: sent ? '#059669' : '#6366F1',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '6px',
+                fontWeight: 600,
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                opacity: (sending || !reply.trim()) ? 0.6 : 1,
+                transition: 'background 0.2s',
+              }}
+            >
+              {sent ? <CheckCircle size={15} /> : <Send size={15} />}
+              {sent ? 'Reply Sent ✓' : sending ? 'Sending…' : 'Send Reply'}
+            </button>
+            <button
+              onClick={() => onAction(order._id, 'Return Approved')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px',
+                padding: '0.45rem 1rem',
+                background: '#10B981', color: '#fff',
+                border: 'none', borderRadius: '6px',
+                fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
+              }}
+            >
+              <CheckCircle size={15} /> Approve Return
+            </button>
+            <button
+              onClick={() => onAction(order._id, 'Cancelled')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px',
+                padding: '0.45rem 1rem',
+                background: '#EF4444', color: '#fff',
+                border: 'none', borderRadius: '6px',
+                fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
+              }}
+            >
+              <XCircle size={15} /> Reject Return
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────────────────────
+   Main SellerDashboard
+───────────────────────────────────────────────────────────── */
 const SellerDashboard = () => {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
@@ -15,208 +246,262 @@ const SellerDashboard = () => {
       setData(res.data);
     } catch (err) {
       console.error(err);
-      alert('Failed to load seller dashboard details.');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   const handleUpdateStatus = async (orderId, status) => {
     try {
       await API.put(`/orders/${orderId}/status`, {
         status,
-        message: `Your package status has been updated to ${status}.`,
-        location: 'Seller Sorting Hub',
+        message: `Order status updated to ${status}.`,
+        location: 'Seller Hub',
       });
       fetchData();
     } catch (err) {
-      alert('Failed to update status');
+      alert('Failed to update order status');
+    }
+  };
+
+  const handleVendorReply = async (orderId, reply) => {
+    try {
+      await API.post(`/orders/${orderId}/vendor-reply`, { reply });
+    } catch (err) {
+      alert('Failed to send reply');
     }
   };
 
   if (loading) return <Loader />;
 
-  // Separate return requests from active orders
-  const returnRequests = data?.recentOrders?.filter(o => o.status === 'Return Requested') || [];
-  const activeOrders = data?.recentOrders?.filter(o => o.status !== 'Return Requested') || [];
+  const returnRequests = data?.recentOrders?.filter((o) => o.status === 'Return Requested') || [];
+  const activeOrders = data?.recentOrders?.filter((o) => o.status !== 'Return Requested') || [];
 
   return (
-    <div className="container dashboard-layout">
-      {/* Sidebar */}
-      <aside className="dashboard-sidebar">
-        <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <ShoppingBag size={20} /> Seller Central
-        </h3>
-        <ul className="dashboard-menu">
-          <li className="dashboard-menu-item active" onClick={() => navigate('/seller')}>
-            <LayoutDashboard size={18} /> Dashboard
-          </li>
-          <li className="dashboard-menu-item" onClick={() => navigate('/seller/add-product')}>
-            <PlusCircle size={18} /> Add Product
-          </li>
-          <li className="dashboard-menu-item" onClick={() => navigate('/seller/manage-products')}>
-            <ShoppingBag size={18} /> Manage Inventory
-          </li>
-        </ul>
-      </aside>
-
-      <main>
-        <h1 style={{ fontSize: '1.8rem', fontWeight: 600, marginBottom: '1.5rem' }}>Dashboard Overview</h1>
-
-        {/* ── Return/Replacement Request Alert ── */}
-        {returnRequests.length > 0 && (
-          <div
-            style={{
-              backgroundColor: '#FFF5F5',
-              border: '2px solid #CC0C39',
-              borderRadius: '8px',
-              padding: '1.25rem 1.5rem',
-              marginBottom: '2rem',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
-              <AlertTriangle size={22} color="#CC0C39" />
-              <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#CC0C39' }}>
-                Action Required — {returnRequests.length} Return/Replacement Request{returnRequests.length > 1 ? 's' : ''}
-              </h2>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {returnRequests.map((order) => (
-                <div
-                  key={order._id}
-                  style={{
-                    backgroundColor: '#FFF',
-                    border: '1px solid #F8C3BF',
-                    borderRadius: '6px',
-                    padding: '1rem',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
-                    <div>
-                      <span style={{ fontSize: '0.8rem', color: '#888', display: 'block' }}>ORDER #{order._id}</span>
-                      <strong style={{ fontSize: '0.95rem' }}>
-                        Customer: {order.user?.name || 'Unknown'} — Rs. {order.total}
-                      </strong>
-                      <div style={{ marginTop: '0.4rem', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {order.items.map((item, idx) => (
-                          <span
-                            key={idx}
-                            style={{
-                              fontSize: '0.8rem',
-                              backgroundColor: '#F7ECEC',
-                              padding: '0.2rem 0.6rem',
-                              borderRadius: '20px',
-                              color: '#CC0C39',
-                            }}
-                          >
-                            {item.title} ×{item.quantity}
-                          </span>
-                        ))}
-                      </div>
-                      <span style={{ display: 'block', fontSize: '0.8rem', color: '#555', marginTop: '0.4rem' }}>
-                        Return reason is stored in the order tracking history.
-                      </span>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-                      <button
-                        className="btn"
-                        style={{ backgroundColor: '#28a745', color: '#FFF', padding: '0.45rem 1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '5px' }}
-                        onClick={() => handleUpdateStatus(order._id, 'Return Approved')}
-                      >
-                        <CheckCircle size={15} /> Approve Return
-                      </button>
-                      <button
-                        className="btn"
-                        style={{ backgroundColor: '#CC0C39', color: '#FFF', padding: '0.45rem 1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '5px' }}
-                        onClick={() => handleUpdateStatus(order._id, 'Cancelled')}
-                      >
-                        <XCircle size={15} /> Reject
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── Analytics Stats ── */}
-        <div className="stats-grid" style={{ marginBottom: '2rem' }}>
-          <div className="stat-card" style={{ borderLeftColor: 'var(--primary)' }}>
-            <span className="stat-title">Total Revenue</span>
-            <div className="stat-value" style={{ display: 'flex', alignItems: 'center' }}>
-              <IndianRupee size={24} /> {data?.analytics?.revenue?.toFixed(2) || '0.00'}
-            </div>
-          </div>
-          <div className="stat-card" style={{ borderLeftColor: 'var(--success)' }}>
-            <span className="stat-title">Items Sold</span>
-            <div className="stat-value">{data?.analytics?.itemsSold || 0}</div>
-          </div>
-          <div className="stat-card" style={{ borderLeftColor: 'var(--accent)' }}>
-            <span className="stat-title">Total Products</span>
-            <div className="stat-value">{data?.analytics?.productsCount || 0}</div>
-          </div>
-          <div className="stat-card" style={{ borderLeftColor: '#3498db' }}>
-            <span className="stat-title">Total Orders</span>
-            <div className="stat-value">{data?.analytics?.ordersCount || 0}</div>
-          </div>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#F9FAFB' }}>
+      {/* ── Sidebar ── */}
+      <aside
+        style={{
+          width: '220px',
+          flexShrink: 0,
+          background: '#1E1B4B',
+          color: '#fff',
+          padding: '1.5rem 1rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.25rem',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.5rem 0.75rem', marginBottom: '1.5rem' }}>
+          <ShoppingBag size={22} color="#A5B4FC" />
+          <span style={{ fontWeight: 700, fontSize: '1rem', color: '#C7D2FE' }}>Seller Central</span>
         </div>
 
+        {[
+          { icon: <LayoutDashboard size={17} />, label: 'Dashboard', path: '/seller' },
+          { icon: <PlusCircle size={17} />, label: 'Add Product', path: '/seller/add-product' },
+          { icon: <ShoppingBag size={17} />, label: 'Manage Inventory', path: '/seller/manage-products' },
+        ].map(({ icon, label, path }) => (
+          <button
+            key={path}
+            onClick={() => navigate(path)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '10px',
+              padding: '0.7rem 0.85rem',
+              background: window.location.pathname === path ? 'rgba(165,180,252,0.18)' : 'transparent',
+              border: 'none', borderRadius: '8px', color: '#E0E7FF',
+              fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', width: '100%',
+              transition: 'background 0.15s',
+            }}
+          >
+            {icon} {label}
+          </button>
+        ))}
+      </aside>
+
+      {/* ── Main Content ── */}
+      <main style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
+        <h1 style={{ fontSize: '1.7rem', fontWeight: 700, color: '#111827', marginBottom: '1.5rem' }}>
+          Dashboard Overview
+        </h1>
+
+        {/* ── Stats ── */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+            gap: '1rem',
+            marginBottom: '2rem',
+          }}
+        >
+          {[
+            { label: 'Total Revenue', value: `₹${(data?.analytics?.revenue || 0).toFixed(2)}`, color: '#6366F1', icon: <IndianRupee size={20} /> },
+            { label: 'Items Sold', value: data?.analytics?.itemsSold || 0, color: '#10B981', icon: <TrendingUp size={20} /> },
+            { label: 'Products Listed', value: data?.analytics?.productsCount || 0, color: '#F59E0B', icon: <Package size={20} /> },
+            { label: 'Total Orders', value: data?.analytics?.ordersCount || 0, color: '#3B82F6', icon: <ShoppingBag size={20} /> },
+            { label: 'Pending Returns', value: returnRequests.length, color: '#EF4444', icon: <RotateCcw size={20} /> },
+          ].map(({ label, value, color, icon }) => (
+            <div
+              key={label}
+              style={{
+                background: '#fff',
+                borderRadius: '10px',
+                padding: '1.1rem 1.25rem',
+                boxShadow: '0 1px 6px rgba(0,0,0,0.07)',
+                borderLeft: `4px solid ${color}`,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color, marginBottom: '6px' }}>
+                {icon}
+                <span style={{ fontSize: '0.78rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
+              </div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#111827' }}>{value}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Return Requests Section ── */}
+        <section style={{ marginBottom: '2.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
+            {returnRequests.length > 0 && <AlertTriangle size={20} color="#B45309" />}
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#1E293B' }}>
+              {returnRequests.length > 0
+                ? `⚠️ ${returnRequests.length} Return/Replacement Request${returnRequests.length > 1 ? 's' : ''} Pending`
+                : '✅ No Pending Return Requests'}
+            </h2>
+          </div>
+
+          {returnRequests.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {returnRequests.map((order) => (
+                <ReturnCard
+                  key={order._id}
+                  order={order}
+                  onAction={handleUpdateStatus}
+                  onReply={handleVendorReply}
+                />
+              ))}
+            </div>
+          ) : (
+            <div
+              style={{
+                background: '#F0FDF4',
+                border: '1px solid #BBF7D0',
+                borderRadius: '10px',
+                padding: '1.25rem 1.5rem',
+                color: '#166534',
+                fontSize: '0.9rem',
+              }}
+            >
+              All return requests have been handled. Great work! 🎉
+            </div>
+          )}
+        </section>
+
         {/* ── Active Orders Table ── */}
-        <section className="card" style={{ border: '1px solid #DDD' }}>
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Package size={18} color="var(--primary)" /> Recent Orders
-          </h2>
+        <section
+          style={{
+            background: '#fff',
+            borderRadius: '10px',
+            boxShadow: '0 1px 6px rgba(0,0,0,0.07)',
+            overflow: 'hidden',
+          }}
+        >
+          <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid #F3F4F6' }}>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1E293B', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+              <Package size={18} color="#6366F1" /> Recent Orders
+            </h2>
+          </div>
+
           {activeOrders.length === 0 ? (
-            <p style={{ color: '#666', fontSize: '0.9rem' }}>No orders placed for your products yet.</p>
+            <div style={{ padding: '1.5rem', color: '#6B7280', fontSize: '0.9rem' }}>
+              No orders placed for your products yet.
+            </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
                 <thead>
-                  <tr style={{ borderBottom: '2px solid #EEE', textAlign: 'left' }}>
-                    <th style={{ padding: '0.8rem' }}>Order ID</th>
-                    <th style={{ padding: '0.8rem' }}>Customer</th>
-                    <th style={{ padding: '0.8rem' }}>Amount</th>
-                    <th style={{ padding: '0.8rem' }}>Payment</th>
-                    <th style={{ padding: '0.8rem' }}>Status</th>
-                    <th style={{ padding: '0.8rem', textAlign: 'right' }}>Update Status</th>
+                  <tr style={{ background: '#F9FAFB', textAlign: 'left' }}>
+                    {['Order ID', 'Customer', 'Products', 'Amount', 'Payment', 'Status', 'Update'].map((h) => (
+                      <th key={h} style={{ padding: '0.8rem 1rem', fontWeight: 600, color: '#6B7280', whiteSpace: 'nowrap', borderBottom: '1px solid #E5E7EB' }}>
+                        {h}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {activeOrders.map((order) => (
-                    <tr key={order._id} style={{ borderBottom: '1px solid #EEE' }}>
-                      <td style={{ padding: '0.8rem', fontSize: '0.78rem', color: '#555' }}>
-                        ...{order._id.slice(-8)}
+                    <tr key={order._id} style={{ borderBottom: '1px solid #F3F4F6' }}>
+                      <td style={{ padding: '0.85rem 1rem', color: '#6B7280', fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                        #{order._id.slice(-8).toUpperCase()}
                       </td>
-                      <td style={{ padding: '0.8rem' }}>{order.user?.name}</td>
-                      <td style={{ padding: '0.8rem' }}>Rs. {order.total}</td>
-                      <td style={{ padding: '0.8rem' }}>
-                        <span style={{ color: order.paymentStatus === 'Paid' ? 'var(--success)' : 'orange', fontWeight: 600 }}>
+                      <td style={{ padding: '0.85rem 1rem', fontWeight: 500 }}>{order.user?.name || '—'}</td>
+                      <td style={{ padding: '0.85rem 1rem' }}>
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                          {order.items.map((item, idx) => {
+                            const imgUrl = getItemImg(item);
+                            return imgUrl ? (
+                              <img
+                                key={idx}
+                                src={imgUrl}
+                                alt={item.title}
+                                title={`${item.title} ×${item.quantity}`}
+                                style={{ width: '36px', height: '36px', objectFit: 'contain', borderRadius: '4px', border: '1px solid #E5E7EB', background: '#fff' }}
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                              />
+                            ) : (
+                              <span key={idx} style={{ fontSize: '0.75rem', color: '#6B7280' }}>{item.title}</span>
+                            );
+                          })}
+                        </div>
+                      </td>
+                      <td style={{ padding: '0.85rem 1rem', fontWeight: 600 }}>₹{order.total?.toLocaleString()}</td>
+                      <td style={{ padding: '0.85rem 1rem' }}>
+                        <span
+                          style={{
+                            fontWeight: 700,
+                            fontSize: '0.8rem',
+                            color: order.paymentStatus === 'Paid' ? '#059669' : '#D97706',
+                          }}
+                        >
                           {order.paymentStatus}
                         </span>
                       </td>
-                      <td style={{ padding: '0.8rem' }}>
+                      <td style={{ padding: '0.85rem 1rem' }}>
                         <span
                           style={{
-                            fontWeight: 600,
-                            color: order.status === 'Delivered' ? 'var(--success)' : order.status === 'Cancelled' ? 'var(--danger)' : 'var(--accent)',
+                            padding: '0.25rem 0.6rem',
+                            borderRadius: '20px',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            background:
+                              order.status === 'Delivered' ? '#DCFCE7' :
+                              order.status === 'Cancelled' ? '#FEE2E2' :
+                              '#EEF2FF',
+                            color:
+                              order.status === 'Delivered' ? '#166534' :
+                              order.status === 'Cancelled' ? '#991B1B' :
+                              '#4338CA',
                           }}
                         >
                           {order.status}
                         </span>
                       </td>
-                      <td style={{ padding: '0.8rem', textAlign: 'right' }}>
+                      <td style={{ padding: '0.85rem 1rem' }}>
                         {order.status !== 'Delivered' && order.status !== 'Cancelled' && order.status !== 'Refunded' && (
                           <select
                             onChange={(e) => handleUpdateStatus(order._id, e.target.value)}
                             value={order.status}
-                            style={{ padding: '0.3rem', border: '1px solid #DDD', borderRadius: '4px', fontSize: '0.85rem' }}
+                            style={{
+                              padding: '0.3rem 0.5rem',
+                              border: '1px solid #D1D5DB',
+                              borderRadius: '6px',
+                              fontSize: '0.82rem',
+                              background: '#fff',
+                              cursor: 'pointer',
+                            }}
                           >
                             <option value="Order Placed">Placed</option>
                             <option value="Packed">Packed</option>

@@ -55,26 +55,28 @@ const Home = () => {
       <div
         style={{
           position: 'relative',
-          height: '380px',
-          backgroundImage: 'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(234,237,237,1)), url("https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1600")',
+          /* Responsive height: 220px on phone, up to 380px on desktop */
+          height: 'clamp(200px, 35vw, 380px)',
+          backgroundImage: 'linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(19,25,33,0.85)), url("https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&auto=format&fit=crop&q=60")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           borderRadius: '4px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          padding: '3rem',
+          padding: 'clamp(1rem, 4vw, 3rem)',
           color: '#FFF',
-          marginBottom: '2rem',
+          marginBottom: '1.5rem',
+          overflow: 'hidden',
         }}
       >
-        <span style={{ backgroundColor: 'var(--primary)', color: '#000', padding: '0.4rem 0.8rem', alignSelf: 'flex-start', fontWeight: 700, borderRadius: '4px', marginBottom: '1rem' }}>
+        <span style={{ backgroundColor: 'var(--primary)', color: '#000', padding: '0.3rem 0.7rem', alignSelf: 'flex-start', fontWeight: 700, borderRadius: '4px', marginBottom: '0.75rem', fontSize: 'clamp(0.7rem, 2.5vw, 0.9rem)' }}>
           FESTIVAL OF OFFERS
         </span>
-        <h1 style={{ fontSize: '3rem', fontWeight: 800, textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>Upgrade Your Lifestyle</h1>
-        <p style={{ fontSize: '1.2rem', marginTop: '0.5rem', textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>Up to 70% off on premium category items. Free delivery included.</p>
-        <Link to="/products" style={{ marginTop: '1.5rem', alignSelf: 'flex-start' }}>
-          <button className="btn btn-primary" style={{ padding: '0.8rem 2rem', fontSize: '1rem' }}>Shop Now</button>
+        <h1 style={{ fontSize: 'clamp(1.4rem, 5vw, 3rem)', fontWeight: 800, textShadow: '2px 2px 4px rgba(0,0,0,0.5)', margin: 0 }}>Upgrade Your Lifestyle</h1>
+        <p style={{ fontSize: 'clamp(0.8rem, 2.5vw, 1.2rem)', marginTop: '0.5rem', textShadow: '1px 1px 2px rgba(0,0,0,0.5)', opacity: 0.9 }}>Up to 70% off on premium category items. Free delivery included.</p>
+        <Link to="/products" style={{ marginTop: '1rem', alignSelf: 'flex-start' }}>
+          <button className="btn btn-primary" style={{ padding: 'clamp(0.5rem, 2vw, 0.8rem) clamp(1rem, 4vw, 2rem)', fontSize: 'clamp(0.8rem, 2.5vw, 1rem)' }}>Shop Now</button>
         </Link>
       </div>
 
@@ -82,32 +84,31 @@ const Home = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '1.5rem',
-          marginTop: '-80px',
-          position: 'relative',
-          zIndex: 5,
-          marginBottom: '3rem',
+          /* minmax(160px) instead of 280px — fits 2 cols on mobile */
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))',
+          gap: '1rem',
+          marginBottom: '2rem',
         }}
       >
         {['Electronics', 'Fashion', 'Mobiles', 'Home Appliances'].map((cat) => (
-          <div key={cat} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem' }}>{cat}</h3>
+          <div key={cat} className="card" style={{ display: 'flex', flexDirection: 'column', padding: '1rem' }}>
+            <h3 style={{ fontSize: 'clamp(0.9rem, 2.5vw, 1.2rem)', fontWeight: 700, marginBottom: '0.75rem' }}>{cat}</h3>
             <img
               src={
                 cat === 'Electronics'
-                  ? 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400'
+                  ? 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400&auto=format&fit=crop&q=60'
                   : cat === 'Fashion'
-                  ? 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400'
+                  ? 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&auto=format&fit=crop&q=60'
                   : cat === 'Mobiles'
-                  ? 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400'
-                  : 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=400'
+                  ? 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&auto=format&fit=crop&q=60'
+                  : 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=400&auto=format&fit=crop&q=60'
               }
               alt={cat}
-              style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '4px', marginBottom: '1rem' }}
+              loading="lazy"
+              style={{ width: '100%', height: 'clamp(100px, 15vw, 180px)', objectFit: 'cover', borderRadius: '4px', marginBottom: '0.75rem', display: 'block' }}
             />
-            <Link to={`/products?category=${cat}`} style={{ marginTop: 'auto', color: '#007185', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-              See more <ChevronRight size={16} />
+            <Link to={`/products?category=${cat}`} style={{ marginTop: 'auto', color: '#007185', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.875rem' }}>
+              See more <ChevronRight size={14} />
             </Link>
           </div>
         ))}
@@ -138,14 +139,20 @@ const Home = () => {
             <Star color="var(--primary)" fill="var(--primary)" />
             <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Recommended For You</h2>
           </div>
-          <div style={{ display: 'flex', gap: '1.5rem', overflowX: 'auto', paddingBottom: '1rem' }}>
+          <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.75rem', WebkitOverflowScrolling: 'touch' }}>
             {recommendedProducts.map((p) => (
-              <div key={p._id} style={{ minWidth: '220px', width: '220px', border: '1px solid #EEE', borderRadius: '4px', padding: '0.8rem', display: 'flex', flexDirection: 'column' }}>
+              <div key={p._id} style={{ minWidth: '160px', width: '160px', border: '1px solid #EEE', borderRadius: '4px', padding: '0.75rem', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
                 <Link to={`/products/${p._id}`}>
-                  <img src={p.images?.[0]?.url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500'} alt={p.title} style={{ width: '100%', height: '140px', objectFit: 'contain' }} />
-                  <h4 style={{ fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: 600, height: '2.5rem', overflow: 'hidden' }}>{p.title}</h4>
+                  <img
+                    src={p.images?.[0]?.url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&auto=format&fit=crop&q=60'}
+                    alt={p.title}
+                    loading="lazy"
+                    style={{ width: '100%', height: '120px', objectFit: 'contain', display: 'block', backgroundColor: '#f9f9f9' }}
+                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400'; }}
+                  />
+                  <h4 style={{ fontSize: '0.8rem', marginTop: '0.4rem', fontWeight: 600, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{p.title}</h4>
                 </Link>
-                <span style={{ fontSize: '1.1rem', fontWeight: 700, marginTop: '0.5rem' }}>Rs. {p.price}</span>
+                <span style={{ fontSize: '0.95rem', fontWeight: 700, marginTop: '0.4rem' }}>Rs. {p.price}</span>
               </div>
             ))}
           </div>

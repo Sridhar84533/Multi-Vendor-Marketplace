@@ -215,6 +215,7 @@ exports.requestReturn = async (req, res) => {
     if (!order) return res.status(404).json({ message: 'Order not found' });
 
     order.status = 'Return Requested';
+    order.returnReason = reason;
     order.trackingHistory.push({
       status: 'Return Requested',
       message: `Return requested. Reason: ${reason}`,
@@ -256,6 +257,43 @@ exports.requestReturn = async (req, res) => {
       } catch (notifErr) {
         console.error('Failed to send return notification to vendor:', notifErr);
       }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @POST /api/orders/:id/vendor-reply
+exports.replyToReturn = async (req, res) => {
+  try {
+    const { reply } = req.body;
+    const order = await Order.findById(req.params.id).populate('user', 'name email');
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    order.vendorReply = reply;
+    await order.save();
+    res.json({ message: 'Reply sent', vendorReply: reply });
+
+    // Notify the customer (fire and forget)
+    setImmediate(async () => {
+      try {
+        const io = req.app.get('socketio');
+        const notif = await Notification.create({
+          user: order.user._id,
+          title: '📦 Seller Replied to Your Return Request',
+          message: reply,
+          type: 'order',
+          link: '/orders',
+        });
+        if (io) {
+          io.to(order.user._id.toString()).emit('notification', {
+            title: notif.title,
+            message: notif.message,
+            type: 'order',
+            link: '/orders',
+          });
+        }
+      } catch (e) { console.error(e); }
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

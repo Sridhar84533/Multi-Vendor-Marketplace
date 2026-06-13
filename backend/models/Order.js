@@ -60,6 +60,8 @@ const orderSchema = new mongoose.Schema(
     deliveredAt: Date,
     invoiceUrl: String,
     notes: String,
+    returnReason: String,
+    vendorReply: String,
   },
   { timestamps: true }
 );

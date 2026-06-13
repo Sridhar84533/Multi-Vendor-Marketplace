@@ -31,21 +31,8 @@ if (isCloudinaryConfigured) {
     },
   });
 } else {
-  // Setup local upload directory fallback
-  const uploadDir = 'uploads';
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
-
-  storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    }
-  });
+  // Use memory storage fallback so files are kept in memory buffer (converted to base64 in MongoDB)
+  storage = multer.memoryStorage();
 }
 
 module.exports = { cloudinary, storage };

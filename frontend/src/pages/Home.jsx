@@ -4,7 +4,7 @@ import API from '../services/api';
 import ProductCard from '../components/ProductCard/ProductCard';
 import CompareBar from '../components/CompareBar/CompareBar';
 import Loader from '../components/Loader/Loader';
-import { ShoppingBag, ChevronRight, Star } from 'lucide-react';
+import { ShoppingBag, ChevronRight, Star, X } from 'lucide-react';
 
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);

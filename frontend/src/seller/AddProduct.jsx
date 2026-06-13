@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import { LayoutDashboard, ShoppingBag, PlusCircle } from 'lucide-react';
+import { compressImage } from '../utils/imageCompressor';
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -50,9 +51,10 @@ const AddProduct = () => {
       formData.append('sku', sku);
       formData.append('specifications', JSON.stringify(specifications));
 
-      // Append files
+      // Compress and append files
       for (let i = 0; i < images.length; i++) {
-        formData.append('images', images[i]);
+        const compressed = await compressImage(images[i]);
+        formData.append('images', compressed);
       }
 
       await API.post('/products', formData, {

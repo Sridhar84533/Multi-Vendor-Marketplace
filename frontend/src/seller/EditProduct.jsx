@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import API from '../services/api';
 import Loader from '../components/Loader/Loader';
 import { LayoutDashboard, ShoppingBag, PlusCircle } from 'lucide-react';
+import { compressImage } from '../utils/imageCompressor';
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -66,6 +67,10 @@ const EditProduct = () => {
     setSpecifications(specifications.filter((_, i) => i !== idx));
   };
 
+  const handleRemoveExistingImage = (idx) => {
+    setExistingImages(existingImages.filter((_, i) => i !== idx));
+  };
+
   const handleImageChange = (e) => {
     setImages(e.target.files);
   };
@@ -85,9 +90,11 @@ const EditProduct = () => {
       formData.append('stock', stock);
       formData.append('sku', sku);
       formData.append('specifications', JSON.stringify(specifications));
+      formData.append('existingImages', JSON.stringify(existingImages));
 
       for (let i = 0; i < images.length; i++) {
-        formData.append('images', images[i]);
+        const compressed = await compressImage(images[i]);
+        formData.append('images', compressed);
       }
 
       await API.put(`/products/${id}`, formData, {
@@ -131,14 +138,40 @@ const EditProduct = () => {
         {existingImages.length > 0 && (
           <div style={{ marginBottom: '1.5rem' }}>
             <label className="form-label" style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>Current Images</label>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
               {existingImages.map((img, idx) => (
-                <img
-                  key={idx}
-                  src={img.url}
-                  alt={`Product ${idx + 1}`}
-                  style={{ width: '80px', height: '80px', objectFit: 'contain', border: '1px solid #DDD', borderRadius: '4px', padding: '4px' }}
-                />
+                <div key={idx} style={{ position: 'relative', width: '80px', height: '80px' }}>
+                  <img
+                    src={img.url}
+                    alt={`Product ${idx + 1}`}
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', border: '1px solid #DDD', borderRadius: '4px', padding: '4px' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveExistingImage(idx)}
+                    style={{
+                      position: 'absolute',
+                      top: '-6px',
+                      right: '-6px',
+                      backgroundColor: 'var(--danger)',
+                      color: '#FFF',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '20px',
+                      height: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                    }}
+                    title="Remove Image"
+                  >
+                    ×
+                  </button>
+                </div>
               ))}
             </div>
           </div>

@@ -128,13 +128,21 @@ exports.createProduct = async (req, res) => {
     if (req.files) {
       const baseUrl = `${req.protocol}://${req.get('host')}`;
       images = req.files.map((file) => {
-        const isLocal = !file.path.startsWith('http');
+        if (file.buffer) {
+          const url = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+          return {
+            url,
+            publicId: file.originalname || 'image',
+          };
+        }
+        const pathStr = file.path || '';
+        const isLocal = !pathStr.startsWith('http');
         const url = isLocal 
-          ? `${baseUrl}/${file.path.replace(/\\/g, '/')}`
-          : file.path;
+          ? `${baseUrl}/${pathStr.replace(/\\/g, '/')}`
+          : pathStr;
         return {
           url,
-          publicId: file.filename,
+          publicId: file.filename || file.public_id,
         };
       });
     }
@@ -189,6 +197,7 @@ exports.updateProduct = async (req, res) => {
       variants,
       tags,
       specifications,
+      existingImages,
     } = req.body;
 
     if (price) product.price = price;
@@ -207,17 +216,28 @@ exports.updateProduct = async (req, res) => {
     if (variants) product.variants = typeof variants === 'string' ? JSON.parse(variants) : variants;
     if (tags) product.tags = typeof tags === 'string' ? JSON.parse(tags) : tags;
     if (specifications) product.specifications = typeof specifications === 'string' ? JSON.parse(specifications) : specifications;
+    if (existingImages) {
+      product.images = typeof existingImages === 'string' ? JSON.parse(existingImages) : existingImages;
+    }
 
     if (req.files && req.files.length > 0) {
       const baseUrl = `${req.protocol}://${req.get('host')}`;
       const newImages = req.files.map((file) => {
-        const isLocal = !file.path.startsWith('http');
+        if (file.buffer) {
+          const url = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+          return {
+            url,
+            publicId: file.originalname || 'image',
+          };
+        }
+        const pathStr = file.path || '';
+        const isLocal = !pathStr.startsWith('http');
         const url = isLocal 
-          ? `${baseUrl}/${file.path.replace(/\\/g, '/')}`
-          : file.path;
+          ? `${baseUrl}/${pathStr.replace(/\\/g, '/')}`
+          : pathStr;
         return {
           url,
-          publicId: file.filename,
+          publicId: file.filename || file.public_id,
         };
       });
       product.images = [...product.images, ...newImages];

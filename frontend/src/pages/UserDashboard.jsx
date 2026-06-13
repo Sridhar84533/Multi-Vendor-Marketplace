@@ -14,12 +14,12 @@ const UserDashboard = () => {
 
   useEffect(() => {
     if (user) {
-      if (user.role === 'vendor') {
-        navigate('/seller');
-        return;
-      }
       if (user.role === 'admin') {
         navigate('/admin');
+        return;
+      }
+      if (user.role === 'vendor') {
+        setLoading(false);
         return;
       }
     }
@@ -44,6 +44,115 @@ const UserDashboard = () => {
   }, [user, navigate]);
 
   if (loading) return <Loader />;
+
+  if (user?.role === 'vendor') {
+    return (
+      <div className="container" style={{ maxWidth: '1100px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        
+        {/* Welcome Banner */}
+        <div 
+          style={{ 
+            background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', 
+            color: '#ffffff', 
+            padding: '2.5rem', 
+            borderRadius: '8px', 
+            display: 'flex', 
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '1.5rem',
+            boxShadow: 'var(--shadow-md)'
+          }}
+        >
+          <div>
+            <h1 style={{ fontSize: '2rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+              Welcome to your Vendor Portal, {user?.name}!
+            </h1>
+            <p style={{ color: '#c7d2fe', fontSize: '0.95rem' }}>
+              Manage your product catalog, reply to customer return requests, and track your business earnings.
+            </p>
+          </div>
+          <div 
+            style={{ 
+              backgroundColor: 'rgba(255,255,255,0.08)', 
+              border: '1px solid rgba(255,255,255,0.15)', 
+              padding: '1.2rem 2rem', 
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}
+          >
+            <Award color="#FBBF24" size={32} />
+            <div>
+              <span style={{ fontSize: '0.8rem', color: '#a5b4fc', display: 'block', textTransform: 'uppercase' }}>Account Status</span>
+              <strong style={{ fontSize: '1.2rem', color: '#FFF', fontWeight: 700 }}>
+                Verified Seller
+              </strong>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Navigation Cards Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
+          
+          <div className="card" style={{ border: '1px solid #DDD', display: 'flex', flexDirection: 'column', gap: '15px', justifyContent: 'space-between', transition: 'transform 0.2s', cursor: 'pointer' }} onClick={() => navigate('/seller')}>
+            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+              <div style={{ backgroundColor: '#EEF2FF', padding: '1rem', borderRadius: '50%' }}>
+                <LayoutDashboard size={24} color="#4F46E5" />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Seller Dashboard</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Business insights, revenue stats, and pending customer return approvals.</p>
+              </div>
+            </div>
+            <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>Go to Dashboard</button>
+          </div>
+
+          <div className="card" style={{ border: '1px solid #DDD', display: 'flex', flexDirection: 'column', gap: '15px', justifyContent: 'space-between', transition: 'transform 0.2s', cursor: 'pointer' }} onClick={() => navigate('/seller/manage-products')}>
+            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+              <div style={{ backgroundColor: '#ECFDF5', padding: '1rem', borderRadius: '50%' }}>
+                <Package size={24} color="#10B981" />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Manage Catalog</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>View, edit details, adjust pricing, and delete listed products.</p>
+              </div>
+            </div>
+            <button className="btn btn-secondary" style={{ width: '100%', marginTop: '1rem' }}>Manage Inventory</button>
+          </div>
+
+          <div className="card" style={{ border: '1px solid #DDD', display: 'flex', flexDirection: 'column', gap: '15px', justifyContent: 'space-between', transition: 'transform 0.2s', cursor: 'pointer' }} onClick={() => navigate('/seller/add-product')}>
+            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+              <div style={{ backgroundColor: '#FFFBEB', padding: '1rem', borderRadius: '50%' }}>
+                <PlusCircle size={24} color="#F59E0B" />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Add Product</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Upload images, input pricing, stock level, and list a new item.</p>
+              </div>
+            </div>
+            <button className="btn btn-outline" style={{ width: '100%', marginTop: '1rem' }}>List New Product</button>
+          </div>
+
+        </div>
+
+        {/* Info Section */}
+        <div className="card" style={{ border: '1px solid #DDD', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <h2 style={{ fontSize: '1.3rem', fontWeight: 700 }}>Seller Portal Guidelines & Support</h2>
+          <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+            As a registered merchant on our Multi-Vendor Marketplace, you are responsible for maintaining accurate product information, stock availability, and high levels of customer satisfaction. Please check your **Seller Dashboard** regularly for customer return requests. Returns and replacement requests must be resolved within 48 hours to maintain a high vendor rating.
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+            <Link to="/profile" style={{ color: '#007185', fontSize: '0.9rem', fontWeight: 600 }}>Update Profile Details &rarr;</Link>
+            <span style={{ color: '#ccc' }}>|</span>
+            <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Support Email: <strong>seller-support@marketplace.com</strong></span>
+          </div>
+        </div>
+
+      </div>
+    );
+  }
 
   const recentOrders = orders.slice(0, 3);
   const activeOrdersCount = orders.filter(o => o.status !== 'Delivered' && o.status !== 'Cancelled').length;

@@ -23,7 +23,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar">
+    <nav className={`navbar ${isVendor ? 'navbar-vendor' : ''}`}>
       <Link to="/" className="navbar-logo" style={{ fontSize: '1.35rem', whiteSpace: 'nowrap' }}>
         Multi-Vendor Marketplace
       </Link>

@@ -843,3 +843,13 @@ img {
   content-visibility: auto;
   contain-intrinsic-size: 0 280px;
 }
+
+/* ── Vendor Navbar Styling ── */
+@media (min-width: 769px) {
+  .navbar.navbar-vendor {
+    justify-content: flex-start;
+  }
+  .navbar.navbar-vendor .navbar-nav {
+    margin-left: 2rem;
+  }
+}

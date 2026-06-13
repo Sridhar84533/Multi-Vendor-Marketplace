@@ -103,7 +103,7 @@ const Login = () => {
       </div>
 
       <div style={{ marginTop: '2rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-        <a href="http://localhost:5173" style={{ color: '#0066c0', textDecoration: 'underline' }}>Back to Storefront</a>
+        <a href={window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5173' : window.location.origin.replace('admin.', '').replace('-admin', '')} style={{ color: '#0066c0', textDecoration: 'underline' }}>Back to Storefront</a>
       </div>
     </div>
   );

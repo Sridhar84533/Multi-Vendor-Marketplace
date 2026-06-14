@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Users, ShieldAlert, ArrowLeftRight, ExternalLink } from 'lucide-react';
+import logo from '../logo.png';
 
 const Sidebar = () => {
   const storefrontUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -11,7 +12,7 @@ const Sidebar = () => {
     <aside className="admin-sidebar">
       <div className="sidebar-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <LayoutDashboard size={20} color="var(--primary)" />
+          <img src={logo} alt="Logo" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
           <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-main)' }}>Marketplace</span>
         </div>
         <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>Admin Portal</span>

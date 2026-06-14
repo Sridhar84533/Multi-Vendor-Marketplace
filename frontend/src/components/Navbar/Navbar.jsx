@@ -6,6 +6,8 @@ import { ShoppingCart, Bell, LogOut } from 'lucide-react';
 import SearchBar from '../SearchBar/SearchBar';
 import Notifications from '../Notifications/Notifications';
 
+import logo from '../../assets/logo.png';
+
 const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -24,7 +26,8 @@ const Navbar = () => {
 
   return (
     <nav className={`navbar ${isVendor ? 'navbar-vendor' : ''}`}>
-      <Link to={isVendor ? '/dashboard' : '/'} className="navbar-logo" style={{ fontSize: '1.35rem', whiteSpace: 'nowrap' }}>
+      <Link to={isVendor ? '/dashboard' : '/'} className="navbar-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.35rem', whiteSpace: 'nowrap' }}>
+        <img src={logo} alt="Logo" style={{ width: '30px', height: '30px', objectFit: 'contain' }} />
         Multi-Vendor Marketplace
       </Link>
 

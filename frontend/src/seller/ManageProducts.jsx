@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import Loader from '../components/Loader/Loader';
 import { LayoutDashboard, ShoppingBag, PlusCircle, Edit, Trash2 } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 /* ── View toggle icons (inline SVG to avoid extra deps) ── */
 const IconList = ({ active }) => (
@@ -83,7 +84,7 @@ const ManageProducts = () => {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.5rem 0.75rem', marginBottom: '1.5rem' }}>
-          <ShoppingBag size={22} color="#A5B4FC" />
+          <img src={logo} alt="Logo" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
           <span style={{ fontWeight: 700, fontSize: '1rem', color: '#C7D2FE' }}>Seller Central</span>
         </div>
         {[

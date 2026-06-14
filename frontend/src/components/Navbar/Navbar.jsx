@@ -73,6 +73,15 @@ const Navbar = () => {
               {showNotifications && <Notifications onClose={() => setShowNotifications(false)} />}
             </div>
 
+            {/* Cart before Sign Out — customers only */}
+            {!isVendor && !isAdmin && (
+              <Link to="/cart" className="nav-link cart-icon-container">
+                <ShoppingCart size={22} />
+                <span className="cart-badge">{cartCount}</span>
+                <span className="nav-line-2" style={{ marginLeft: '4px' }}>Cart</span>
+              </Link>
+            )}
+
             <div className="nav-link" onClick={handleLogout}>
               <span className="nav-line-1">Sign Out</span>
               <span className="nav-line-2" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -84,15 +93,6 @@ const Navbar = () => {
           <Link to="/login" className="nav-link">
             <span className="nav-line-1">Hello, sign in</span>
             <span className="nav-line-2">Account &amp; Lists</span>
-          </Link>
-        )}
-
-        {/* Cart only for customers */}
-        {!isVendor && !isAdmin && (
-          <Link to="/cart" className="nav-link cart-icon-container">
-            <ShoppingCart size={22} />
-            <span className="cart-badge">{cartCount}</span>
-            <span className="nav-line-2" style={{ marginLeft: '4px' }}>Cart</span>
           </Link>
         )}
       </div>

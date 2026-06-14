@@ -113,26 +113,51 @@ const EditProduct = () => {
   if (loading) return <Loader />;
 
   return (
-    <div className="container dashboard-layout">
-      <aside className="dashboard-sidebar">
-        <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <ShoppingBag size={20} /> Seller Central
-        </h3>
-        <ul className="dashboard-menu">
-          <li className="dashboard-menu-item" onClick={() => navigate('/seller')}>
-            <LayoutDashboard size={18} /> Dashboard
-          </li>
-          <li className="dashboard-menu-item" onClick={() => navigate('/seller/add-product')}>
-            <PlusCircle size={18} /> Add Product
-          </li>
-          <li className="dashboard-menu-item active" onClick={() => navigate('/seller/manage-products')}>
-            <ShoppingBag size={18} /> Manage Inventory
-          </li>
-        </ul>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#F9FAFB' }}>
+      {/* ── Sidebar ── */}
+      <aside
+        style={{
+          width: '220px',
+          flexShrink: 0,
+          background: '#1E1B4B',
+          color: '#fff',
+          padding: '1.5rem 1rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.25rem',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.5rem 0.75rem', marginBottom: '1.5rem' }}>
+          <ShoppingBag size={22} color="#A5B4FC" />
+          <span style={{ fontWeight: 700, fontSize: '1rem', color: '#C7D2FE' }}>Seller Central</span>
+        </div>
+
+        {[
+          { icon: <LayoutDashboard size={17} />, label: 'Dashboard', path: '/seller' },
+          { icon: <PlusCircle size={17} />, label: 'Add Product', path: '/seller/add-product' },
+          { icon: <ShoppingBag size={17} />, label: 'Manage Inventory', path: '/seller/manage-products' },
+        ].map(({ icon, label, path }) => (
+          <button
+            key={path}
+            onClick={() => navigate(path)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '10px',
+              padding: '0.7rem 0.85rem',
+              background: window.location.pathname === path ? 'rgba(165,180,252,0.25)' : 'transparent',
+              border: 'none', borderRadius: '8px', color: '#E0E7FF',
+              fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', width: '100%',
+              transition: 'background 0.15s',
+            }}
+          >
+            {icon} {label}
+          </button>
+        ))}
       </aside>
 
-      <main className="card" style={{ border: '1px solid #DDD' }}>
-        <h1 style={{ fontSize: '1.8rem', fontWeight: 600, marginBottom: '1.5rem' }}>Edit Product</h1>
+      {/* ── Main Content ── */}
+      <main style={{ flex: 1, padding: '2rem', overflowY: 'auto', background: '#F9FAFB' }}>
+        <div style={{ background: '#fff', borderRadius: '10px', padding: '2rem', boxShadow: '0 1px 6px rgba(0,0,0,0.07)' }}>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: 600, marginBottom: '1.5rem', color: '#111827' }}>Edit Product</h1>
 
         {/* Existing product images preview */}
         {existingImages.length > 0 && (
@@ -259,6 +284,7 @@ const EditProduct = () => {
             </button>
           </div>
         </form>
+        </div>
       </main>
     </div>
   );

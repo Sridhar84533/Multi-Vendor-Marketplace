@@ -46,113 +46,144 @@ const UserDashboard = () => {
   if (loading) return <Loader />;
 
   if (user?.role === 'vendor') {
+    const navItems = [
+      { icon: <LayoutDashboard size={17} />, label: 'Home', path: '/dashboard' },
+      { icon: <ShoppingBag size={17} />, label: 'Seller Dashboard', path: '/seller' },
+      { icon: <PlusCircle size={17} />, label: 'Add Product', path: '/seller/add-product' },
+      { icon: <Package size={17} />, label: 'Manage Inventory', path: '/seller/manage-products' },
+    ];
+
     return (
-      <div className="container" style={{ maxWidth: '1100px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-        
-        {/* Welcome Banner */}
-        <div 
-          style={{ 
-            background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', 
-            color: '#ffffff', 
-            padding: '2.5rem', 
-            borderRadius: '8px', 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '1.5rem',
-            boxShadow: 'var(--shadow-md)'
-          }}
-        >
-          <div>
-            <h1 style={{ fontSize: '2rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-              Welcome to your Vendor Portal, {user?.name}!
+      <div style={{ display: 'flex', minHeight: '100vh', background: '#F9FAFB' }}>
+
+        {/* ── Sidebar ── */}
+        <aside style={{
+          width: '220px',
+          flexShrink: 0,
+          background: '#1E1B4B',
+          color: '#fff',
+          padding: '1.5rem 1rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.25rem',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.5rem 0.75rem', marginBottom: '1.5rem' }}>
+            <ShoppingBag size={22} color="#A5B4FC" />
+            <span style={{ fontWeight: 700, fontSize: '1rem', color: '#C7D2FE' }}>Seller Central</span>
+          </div>
+
+          {navItems.map(({ icon, label, path }) => {
+            const isActive = window.location.pathname === path;
+            return (
+              <button
+                key={path}
+                onClick={() => navigate(path)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  padding: '0.7rem 0.85rem',
+                  background: isActive ? 'rgba(255,153,0,0.22)' : 'transparent',
+                  border: isActive ? '1px solid rgba(255,153,0,0.35)' : '1px solid transparent',
+                  borderRadius: '8px',
+                  color: isActive ? '#FF9900' : '#E0E7FF',
+                  fontWeight: isActive ? 700 : 400,
+                  fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', width: '100%',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {icon} {label}
+              </button>
+            );
+          })}
+        </aside>
+
+        {/* ── Main Content ── */}
+        <main style={{ flex: 1, padding: '2.5rem', overflowY: 'auto' }}>
+          {/* Welcome heading */}
+          <div style={{ marginBottom: '2rem' }}>
+            <h1 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#111827', marginBottom: '0.4rem' }}>
+              Welcome back, {user?.name}!
             </h1>
-            <p style={{ color: '#c7d2fe', fontSize: '0.95rem' }}>
-              Manage your product catalog, reply to customer return requests, and track your business earnings.
+            <p style={{ color: '#6B7280', fontSize: '0.95rem' }}>
+              Manage your product catalog, reply to customer returns, and track business earnings.
             </p>
           </div>
-          <div 
-            style={{ 
-              backgroundColor: 'rgba(255,255,255,0.08)', 
-              border: '1px solid rgba(255,255,255,0.15)', 
-              padding: '1.2rem 2rem', 
-              borderRadius: '6px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px'
-            }}
-          >
-            <Award color="#FBBF24" size={32} />
-            <div>
-              <span style={{ fontSize: '0.8rem', color: '#a5b4fc', display: 'block', textTransform: 'uppercase' }}>Account Status</span>
-              <strong style={{ fontSize: '1.2rem', color: '#FFF', fontWeight: 700 }}>
-                Verified Seller
-              </strong>
+
+          {/* Quick Access Cards */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+            gap: '1.25rem',
+            marginBottom: '2.5rem',
+          }}>
+            {[
+              { label: 'Seller Dashboard', desc: 'Revenue, orders & return approvals', color: '#6366F1', icon: <LayoutDashboard size={22} />, path: '/seller' },
+              { label: 'Add New Product', desc: 'Upload images, set price & stock', color: '#F59E0B', icon: <PlusCircle size={22} />, path: '/seller/add-product' },
+              { label: 'Manage Inventory', desc: 'Edit, delete and restock products', color: '#10B981', icon: <Package size={22} />, path: '/seller/manage-products' },
+              { label: 'My Profile', desc: 'Update account & security info', color: '#3B82F6', icon: <User size={22} />, path: '/profile' },
+            ].map(({ label, desc, color, icon, path }) => (
+              <div
+                key={label}
+                onClick={() => navigate(path)}
+                style={{
+                  background: '#fff',
+                  borderRadius: '10px',
+                  padding: '1.25rem',
+                  boxShadow: '0 1px 6px rgba(0,0,0,0.07)',
+                  borderLeft: `4px solid ${color}`,
+                  cursor: 'pointer',
+                  transition: 'box-shadow 0.2s, transform 0.15s',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 6px rgba(0,0,0,0.07)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color }}>
+                  {icon}
+                  <span style={{ fontSize: '1rem', fontWeight: 700, color: '#111827' }}>{label}</span>
+                </div>
+                <p style={{ fontSize: '0.83rem', color: '#6B7280', margin: 0 }}>{desc}</p>
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '4px',
+                  fontSize: '0.82rem', fontWeight: 600, color,
+                  marginTop: '4px',
+                }}>
+                  Open →
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Info / Guidelines Card */}
+          <div style={{
+            background: '#fff',
+            borderRadius: '10px',
+            padding: '1.5rem',
+            boxShadow: '0 1px 6px rgba(0,0,0,0.07)',
+            borderLeft: '4px solid #A5B4FC',
+          }}>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1E293B', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Award size={18} color="#6366F1" /> Seller Portal Guidelines
+            </h2>
+            <p style={{ fontSize: '0.9rem', color: '#4B5563', lineHeight: '1.7', marginBottom: '1rem' }}>
+              As a registered merchant, you are responsible for maintaining accurate product information, 
+              stock availability, and high customer satisfaction. Check your <strong>Seller Dashboard</strong> regularly for 
+              return requests — they must be resolved within <strong>48 hours</strong> to maintain your seller rating.
+            </p>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <button onClick={() => navigate('/profile')} style={{ background: 'none', border: 'none', color: '#6366F1', fontWeight: 600, fontSize: '0.88rem', cursor: 'pointer', padding: 0 }}>
+                Update Profile →
+              </button>
+              <span style={{ color: '#D1D5DB' }}>|</span>
+              <span style={{ fontSize: '0.88rem', color: '#6B7280' }}>Support: <strong>seller-support@marketplace.com</strong></span>
             </div>
           </div>
-        </div>
-
-        {/* Quick Navigation Cards Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
-          
-          <div className="card" style={{ border: '1px solid #DDD', display: 'flex', flexDirection: 'column', gap: '15px', justifyContent: 'space-between', transition: 'transform 0.2s', cursor: 'pointer' }} onClick={() => navigate('/seller')}>
-            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-              <div style={{ backgroundColor: '#EEF2FF', padding: '1rem', borderRadius: '50%' }}>
-                <LayoutDashboard size={24} color="#4F46E5" />
-              </div>
-              <div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Seller Dashboard</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Business insights, revenue stats, and pending customer return approvals.</p>
-              </div>
-            </div>
-            <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>Go to Dashboard</button>
-          </div>
-
-          <div className="card" style={{ border: '1px solid #DDD', display: 'flex', flexDirection: 'column', gap: '15px', justifyContent: 'space-between', transition: 'transform 0.2s', cursor: 'pointer' }} onClick={() => navigate('/seller/manage-products')}>
-            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-              <div style={{ backgroundColor: '#ECFDF5', padding: '1rem', borderRadius: '50%' }}>
-                <Package size={24} color="#10B981" />
-              </div>
-              <div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Manage Catalog</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>View, edit details, adjust pricing, and delete listed products.</p>
-              </div>
-            </div>
-            <button className="btn btn-secondary" style={{ width: '100%', marginTop: '1rem' }}>Manage Inventory</button>
-          </div>
-
-          <div className="card" style={{ border: '1px solid #DDD', display: 'flex', flexDirection: 'column', gap: '15px', justifyContent: 'space-between', transition: 'transform 0.2s', cursor: 'pointer' }} onClick={() => navigate('/seller/add-product')}>
-            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-              <div style={{ backgroundColor: '#FFFBEB', padding: '1rem', borderRadius: '50%' }}>
-                <PlusCircle size={24} color="#F59E0B" />
-              </div>
-              <div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Add Product</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Upload images, input pricing, stock level, and list a new item.</p>
-              </div>
-            </div>
-            <button className="btn btn-outline" style={{ width: '100%', marginTop: '1rem' }}>List New Product</button>
-          </div>
-
-        </div>
-
-        {/* Info Section */}
-        <div className="card" style={{ border: '1px solid #DDD', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 700 }}>Seller Portal Guidelines & Support</h2>
-          <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
-            As a registered merchant on our Multi-Vendor Marketplace, you are responsible for maintaining accurate product information, stock availability, and high levels of customer satisfaction. Please check your **Seller Dashboard** regularly for customer return requests. Returns and replacement requests must be resolved within 48 hours to maintain a high vendor rating.
-          </p>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-            <Link to="/profile" style={{ color: '#007185', fontSize: '0.9rem', fontWeight: 600 }}>Update Profile Details &rarr;</Link>
-            <span style={{ color: '#ccc' }}>|</span>
-            <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Support Email: <strong>seller-support@marketplace.com</strong></span>
-          </div>
-        </div>
-
+        </main>
       </div>
     );
   }
+
 
   const recentOrders = orders.slice(0, 3);
   const activeOrdersCount = orders.filter(o => o.status !== 'Delivered' && o.status !== 'Cancelled').length;

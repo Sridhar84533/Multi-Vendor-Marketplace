@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { clearCart } from '../redux/cartSlice';
@@ -202,8 +202,9 @@ const Checkout = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [showMockModal, setShowMockModal] = useState(false);
-  const [pendingOrderData, setPendingOrderData] = useState(null);
-  const [pendingRzpOrderId, setPendingRzpOrderId] = useState(null);
+  // Use refs so the modal callback always reads the latest value (avoids stale closure)
+  const pendingOrderDataRef = useRef(null);
+  const pendingRzpOrderIdRef = useRef(null);
 
   // Coupon states
   const [couponCode, setCouponCode] = useState('');
@@ -277,10 +278,13 @@ const Checkout = () => {
     setShowMockModal(false);
     setPlacing(true);
     try {
-      const res = await API.post('/orders', pendingOrderData);
+      const orderData = pendingOrderDataRef.current;
+      const rzpOrderId = pendingRzpOrderIdRef.current;
+      if (!orderData) throw new Error('Order data missing. Please try again.');
+      const res = await API.post('/orders', orderData);
       // Verify with mock payment IDs
       await verifyRazorpayPayment({
-        razorpay_order_id: pendingRzpOrderId,
+        razorpay_order_id: rzpOrderId,
         razorpay_payment_id: 'mock_pay_' + Math.random().toString(36).substr(2, 9),
         razorpay_signature: 'mock_sig',
         orderId: res.data._id,
@@ -288,7 +292,7 @@ const Checkout = () => {
       dispatch(clearCart());
       navigate(`/order-success/${res.data._id}`);
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to place order. Please try again.');
+      alert(err.response?.data?.message || err.message || 'Failed to place order. Please try again.');
     } finally {
       setPlacing(false);
     }
@@ -311,8 +315,9 @@ const Checkout = () => {
       if (paymentMethod === 'razorpay') {
         // Create Razorpay order on backend
         const orderRes = await createRazorpayOrder(total);
-        setPendingRzpOrderId(orderRes.data.id);
-        setPendingOrderData(orderData);
+        // Store in refs (synchronous, no stale-closure issue)
+        pendingRzpOrderIdRef.current = orderRes.data.id;
+        pendingOrderDataRef.current = orderData;
 
         if (window.Razorpay && !orderRes.data.id?.startsWith('mock_')) {
           // Real Razorpay flow

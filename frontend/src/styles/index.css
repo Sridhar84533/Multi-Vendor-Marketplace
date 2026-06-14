@@ -93,8 +93,9 @@ img {
   position: sticky;
   top: 0;
   z-index: 1000;
-  /* wrap on narrow screens */
-  flex-wrap: wrap;
+  /* never wrap — single row on all screen sizes */
+  flex-wrap: nowrap;
+  overflow: hidden;
   width: 100%;
   box-sizing: border-box;
 }
@@ -662,36 +663,42 @@ img {
 
 /* ── Mobile (≤ 768px) ── */
 @media (max-width: 768px) {
-  /* Navbar: search bar drops to its own full-width row */
+  /* Navbar: single row — logo + search + nav icons all inline */
   .navbar {
-    padding: 0.5rem 0.75rem;
-    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+    gap: 0.35rem;
+    flex-wrap: nowrap;
   }
 
   .navbar-logo {
-    order: 1;
-    font-size: 0.95rem;
-  }
-
-  .navbar-nav {
-    order: 2;
-    margin-left: auto;
-    gap: 0.4rem;
+    font-size: 0.78rem;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 110px;
   }
 
   .navbar-search-container {
-    order: 3;
-    flex: 1 1 100%;
-    max-width: 100%;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
   }
 
-  /* Hide less-important nav labels on small screens */
+  .navbar-nav {
+    flex-shrink: 0;
+    gap: 0.2rem;
+  }
+
+  /* Hide top label text — show only bottom bold label */
   .nav-line-1 {
     display: none;
   }
 
   .nav-link {
-    padding: 0.2rem 0.3rem;
+    padding: 0.15rem 0.25rem;
+    font-size: 0.72rem;
   }
 
   /* Dashboard: stack sidebar below content */

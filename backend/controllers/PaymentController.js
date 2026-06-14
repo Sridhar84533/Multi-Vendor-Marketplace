@@ -2,9 +2,13 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const Order = require('../models/Order');
 
-// Initialize Razorpay
+// Initialize Razorpay only when real credentials are present.
+// Real Razorpay keys always start with 'rzp_live_' or 'rzp_test_'.
+// Placeholder values like 'your_razorpay_key_id' must be treated as missing.
+const isRealKey = (key) => typeof key === 'string' && key.startsWith('rzp_');
+
 let razorpay;
-if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+if (isRealKey(process.env.RAZORPAY_KEY_ID) && isRealKey(process.env.RAZORPAY_KEY_SECRET)) {
   razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET,
@@ -15,11 +19,12 @@ if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
 exports.createRazorpayOrder = async (req, res) => {
   try {
     const { amount } = req.body;
+
+    // No real credentials — return a mock order so the frontend shows the mock payment modal
     if (!razorpay) {
-      // Mock mode for local execution/testing if variables are missing
       return res.json({
         id: 'mock_razorpay_' + Math.random().toString(36).substr(2, 9),
-        amount: amount * 100,
+        amount: Math.round(amount * 100),
         currency: 'INR',
       });
     }

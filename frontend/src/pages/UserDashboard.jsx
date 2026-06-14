@@ -81,11 +81,10 @@ const UserDashboard = () => {
                 style={{
                   display: 'flex', alignItems: 'center', gap: '10px',
                   padding: '0.7rem 0.85rem',
-                  background: isActive ? 'rgba(255,153,0,0.22)' : 'transparent',
-                  border: isActive ? '1px solid rgba(255,153,0,0.35)' : '1px solid transparent',
+                  background: isActive ? 'rgba(165,180,252,0.25)' : 'transparent',
+                  border: 'none',
                   borderRadius: '8px',
-                  color: isActive ? '#FF9900' : '#E0E7FF',
-                  fontWeight: isActive ? 700 : 400,
+                  color: '#E0E7FF',
                   fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', width: '100%',
                   transition: 'all 0.15s',
                 }}

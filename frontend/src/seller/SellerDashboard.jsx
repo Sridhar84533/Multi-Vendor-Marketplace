@@ -310,7 +310,7 @@ const SellerDashboard = () => {
             style={{
               display: 'flex', alignItems: 'center', gap: '10px',
               padding: '0.7rem 0.85rem',
-              background: window.location.pathname === path ? 'rgba(165,180,252,0.18)' : 'transparent',
+              background: window.location.pathname === path ? 'rgba(165,180,252,0.25)' : 'transparent',
               border: 'none', borderRadius: '8px', color: '#E0E7FF',
               fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', width: '100%',
               transition: 'background 0.15s',

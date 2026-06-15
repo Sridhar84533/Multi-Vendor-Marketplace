@@ -61,7 +61,7 @@ exports.createOrder = async (req, res) => {
       couponCode,
       paymentMethod,
       estimatedDelivery,
-      trackingHistory: [{ status: 'Order Placed', message: 'Your order has been placed successfully.' }],
+      trackingHistory: [{ status: 'Order Placed', message: `Your order has been placed successfully on ${new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}.`, timestamp: new Date() }],
     });
 
     // Handle loyalty points reduction if used
@@ -171,8 +171,13 @@ exports.updateOrderStatus = async (req, res) => {
     order.trackingHistory.push({ status, message, location });
 
     if (status === 'Delivered') {
-      order.deliveredAt = new Date();
+      const deliveredAt = new Date();
+      order.deliveredAt = deliveredAt;
       order.paymentStatus = 'Paid';
+      // Override the tracking message to include exact delivery timestamp
+      order.trackingHistory[order.trackingHistory.length - 1].message =
+        message || `Your order was delivered on ${deliveredAt.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}.`;
+      order.trackingHistory[order.trackingHistory.length - 1].timestamp = deliveredAt;
     }
 
     await order.save();

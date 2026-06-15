@@ -34,6 +34,16 @@ const IconCompact = ({ active }) => (
   </svg>
 );
 
+/* Format date with time e.g. "15 Jun 2026, 01:33 PM" */
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  return d.toLocaleString('en-IN', {
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', hour12: true,
+  });
+};
+
 const Orders = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
@@ -164,13 +174,21 @@ const Orders = () => {
                     color: 'var(--text-muted)',
                   }}
                 >
-                  <div style={{ display: 'flex', gap: '2rem' }}>
+                  <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
                     <div>
                       <span>ORDER PLACED</span>
                       <strong style={{ display: 'block', color: 'var(--text)', marginTop: '4px' }}>
-                        {new Date(order.createdAt).toLocaleDateString()}
+                        {formatDateTime(order.createdAt)}
                       </strong>
                     </div>
+                    {order.status === 'Delivered' && order.deliveredAt && (
+                      <div>
+                        <span style={{ color: 'var(--success)', fontWeight: 700 }}>✅ DELIVERED ON</span>
+                        <strong style={{ display: 'block', color: 'var(--success)', marginTop: '4px' }}>
+                          {formatDateTime(order.deliveredAt)}
+                        </strong>
+                      </div>
+                    )}
                     <div>
                       <span>TOTAL</span>
                       <strong style={{ display: 'block', color: 'var(--text)', marginTop: '4px' }}>
@@ -269,7 +287,12 @@ const Orders = () => {
                       <span style={{ fontWeight: 600, color: 'var(--text)' }}>Rs. {order.total.toFixed(2)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span>Placed: {new Date(order.createdAt).toLocaleDateString()}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span>📅 Placed: {formatDateTime(order.createdAt)}</span>
+                        {order.status === 'Delivered' && order.deliveredAt && (
+                          <span style={{ color: 'var(--success)', fontWeight: 600 }}>✅ Delivered: {formatDateTime(order.deliveredAt)}</span>
+                        )}
+                      </div>
                       <button
                         onClick={() => handleInvoiceDownload(order._id)}
                         style={{ border: 'none', background: 'none', color: '#007185', cursor: 'pointer', fontSize: '0.78rem', padding: 0, display: 'flex', alignItems: 'center', gap: '3px' }}
@@ -338,9 +361,15 @@ const Orders = () => {
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = '#FFF'}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flex: 1, minWidth: '280px' }}>
-                  <div style={{ width: '80px', flexShrink: 0 }}>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block' }}>Date</span>
-                    <strong style={{ fontSize: '0.83rem' }}>{new Date(order.createdAt).toLocaleDateString()}</strong>
+                  <div style={{ flexShrink: 0 }}>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block' }}>Ordered</span>
+                    <strong style={{ fontSize: '0.83rem' }}>{formatDateTime(order.createdAt)}</strong>
+                    {order.status === 'Delivered' && order.deliveredAt && (
+                      <div style={{ marginTop: '2px' }}>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--success)', fontWeight: 700 }}>✅ Delivered</span>
+                        <strong style={{ display: 'block', fontSize: '0.83rem', color: 'var(--success)' }}>{formatDateTime(order.deliveredAt)}</strong>
+                      </div>
+                    )}
                   </div>
                   <div style={{ width: '100px', flexShrink: 0 }}>
                     <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block' }}>Order ID</span>

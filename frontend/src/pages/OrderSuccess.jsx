@@ -10,6 +10,21 @@ const OrderSuccess = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleString('en-IN', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: true,
+    });
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleDateString('en-IN', {
+      day: '2-digit', month: 'short', year: 'numeric',
+    });
+  };
+
   useEffect(() => {
     const fetchOrder = async () => {
       try {
@@ -60,6 +75,28 @@ const OrderSuccess = () => {
         <div style={{ backgroundColor: '#F9F9F9', border: '1px solid #E7E7E7', borderRadius: '6px', padding: '1.5rem', marginBottom: '2rem', textAlign: 'left' }}>
           <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.8rem' }}>Order Details</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem' }}>
+            {/* Order Placed Timestamp */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f0f7ff', border: '1px solid #bde0ff', borderRadius: '6px', padding: '8px 12px' }}>
+              <span style={{ color: '#005A9E', fontWeight: 600 }}>📅 Order Placed</span>
+              <span style={{ fontWeight: 700, color: '#005A9E' }}>{formatDateTime(order.createdAt)}</span>
+            </div>
+
+            {/* Estimated Delivery */}
+            {order.estimatedDelivery && order.status !== 'Delivered' && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff8e1', border: '1px solid #ffe082', borderRadius: '6px', padding: '8px 12px' }}>
+                <span style={{ color: '#856404', fontWeight: 600 }}>🚚 Estimated Delivery</span>
+                <span style={{ fontWeight: 700, color: '#856404' }}>{formatDate(order.estimatedDelivery)}</span>
+              </div>
+            )}
+
+            {/* Actual Delivery */}
+            {order.status === 'Delivered' && order.deliveredAt && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#e8f5e9', border: '1px solid #66bb6a', borderRadius: '6px', padding: '8px 12px' }}>
+                <span style={{ color: '#2e7d32', fontWeight: 600 }}>✅ Delivered On</span>
+                <span style={{ fontWeight: 700, color: '#2e7d32' }}>{formatDateTime(order.deliveredAt)}</span>
+              </div>
+            )}
+
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>Payment Method:</span>
               <span style={{ fontWeight: 600 }}>{order.paymentMethod.toUpperCase()}</span>
@@ -68,7 +105,6 @@ const OrderSuccess = () => {
               <span style={{ color: 'var(--text-muted)' }}>Total Amount Paid:</span>
               <span style={{ fontWeight: 700, color: '#B12704' }}>Rs. {order.total.toFixed(2)}</span>
             </div>
-
           </div>
         </div>
 

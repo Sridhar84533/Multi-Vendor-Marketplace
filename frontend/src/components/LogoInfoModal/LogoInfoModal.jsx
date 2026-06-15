@@ -68,8 +68,8 @@ const LogoZoomLightbox = ({ isOpen, onClose, logoSrc }) => {
 
   const renderLightboxContent = () => {
     const badgeStyle = {
-      width: '240px',
-      height: '240px',
+      width: '260px',
+      height: '260px',
       borderRadius: '24px',
       boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
       display: 'flex',
@@ -142,7 +142,7 @@ const LogoZoomLightbox = ({ isOpen, onClose, logoSrc }) => {
     return (
       <img
         src={logoSrc}
-        alt="User Logo"
+        alt="Logo"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -265,7 +265,6 @@ const LogoZoomLightbox = ({ isOpen, onClose, logoSrc }) => {
    ───────────────────────────────────────────────────────────── */
 const LogoInfoModal = ({ isOpen, onClose, user }) => {
   const [vendorProfile, setVendorProfile] = useState(null);
-  const [showLightbox, setShowLightbox] = useState(false);
 
   useEffect(() => {
     if (isOpen && user?.role === 'vendor') {
@@ -285,21 +284,11 @@ const LogoInfoModal = ({ isOpen, onClose, user }) => {
 
   if (!isOpen) return null;
 
-  // Resolve user info and specific logo source
+  // Resolve specific logo source
   let logoSrc = logo;
-  let displayName = 'Guest User';
-  let emailText = 'Not Logged In';
-  let roleName = 'Guest';
 
   if (user) {
-    roleName = user.role || 'Guest';
-    emailText = user.email || 'No email';
-    displayName = user.name || 'User';
-
     if (user.role === 'vendor') {
-      displayName = vendorProfile?.businessName || user.name + "'s Store";
-      emailText = vendorProfile?.businessEmail || user.email;
-      
       if (vendorProfile?.logo) {
         logoSrc = vendorProfile.logo;
       } else if (user.avatar) {
@@ -322,179 +311,12 @@ const LogoInfoModal = ({ isOpen, onClose, user }) => {
     }
   }
 
-  const renderLogoBadge = (src, style) => {
-    const badgeStyle = {
-      ...style,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: '12px',
-      cursor: 'pointer',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-      transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-    };
-
-    const handleMouseEnter = (e) => {
-      e.currentTarget.style.transform = 'scale(1.05)';
-      e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.25)';
-    };
-
-    const handleMouseLeave = (e) => {
-      e.currentTarget.style.transform = 'scale(1)';
-      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-    };
-
-    if (src === 'vendor-default') {
-      return (
-        <div
-          onClick={() => setShowLightbox(true)}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          style={{ ...badgeStyle, background: 'linear-gradient(135deg, #6366F1 0%, #4338CA 100%)' }}
-          title="Click to zoom"
-        >
-          <svg viewBox="0 0 24 24" width="50%" height="50%" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#E0E7FF' }}>
-            <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z" />
-            <path d="m3 9 2.44-4A2 2 0 0 1 7.18 4h9.64a2 2 0 0 1 1.74 1l2.44 4" />
-            <path d="M12 9v12" />
-            <path d="M9 9v12" />
-            <path d="M15 9v12" />
-          </svg>
-        </div>
-      );
-    }
-
-    if (src === 'customer-default') {
-      return (
-        <div
-          onClick={() => setShowLightbox(true)}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          style={{ ...badgeStyle, background: 'linear-gradient(135deg, #0D9488 0%, #0F766E 100%)' }}
-          title="Click to zoom"
-        >
-          <svg viewBox="0 0 24 24" width="50%" height="50%" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#CCFBF1' }}>
-            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-        </div>
-      );
-    }
-
-    if (src === 'admin-default') {
-      return (
-        <div
-          onClick={() => setShowLightbox(true)}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          style={{ ...badgeStyle, background: 'linear-gradient(135deg, #E11D48 0%, #9F1239 100%)' }}
-          title="Click to zoom"
-        >
-          <svg viewBox="0 0 24 24" width="50%" height="50%" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#FFE4E6' }}>
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            <circle cx="12" cy="11" r="3" />
-            <path d="m12 14 3.5 3.5" />
-          </svg>
-        </div>
-      );
-    }
-
-    return (
-      <img
-        src={src}
-        alt="Profile Logo"
-        onClick={() => setShowLightbox(true)}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        style={{ ...badgeStyle, objectFit: 'cover' }}
-        title="Click to zoom"
-      />
-    );
-  };
-
   return (
-    <>
-      <div style={{
-        position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.65)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 10000, backdropFilter: 'blur(5px)', padding: '1rem'
-      }} onClick={onClose}>
-        <div style={{
-          backgroundColor: '#FFF', borderRadius: '12px', width: '100%', maxWidth: '380px',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.25)', overflow: 'hidden',
-          color: '#111', fontFamily: "var(--font, 'Inter', sans-serif)"
-        }} onClick={e => e.stopPropagation()}>
-          
-          {/* Header banner */}
-          <div style={{
-            background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 100%)',
-            padding: '1.8rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', color: '#FFF'
-          }}>
-            {renderLogoBadge(logoSrc, { width: '70px', height: '70px', backgroundColor: 'rgba(255,255,255,0.15)', padding: logoSrc.includes('default') ? '0' : '6px' })}
-            <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, textAlign: 'center' }}>
-              {displayName}
-            </h3>
-            <span style={{ fontSize: '0.8rem', color: '#C7D2FE', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
-              {roleName} Portal
-            </span>
-          </div>
-          
-          {/* Details list */}
-          <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <div>
-              <span style={{ fontSize: '0.72rem', color: '#666', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>User Name</span>
-              <strong style={{ fontSize: '0.95rem' }}>{user?.name || 'Guest User'}</strong>
-            </div>
-            <div>
-              <span style={{ fontSize: '0.72rem', color: '#666', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email Address</span>
-              <strong style={{ fontSize: '0.95rem' }}>{emailText}</strong>
-            </div>
-            {user?.role === 'vendor' && vendorProfile?.businessPhone && (
-              <div>
-                <span style={{ fontSize: '0.72rem', color: '#666', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Business Phone</span>
-                <strong style={{ fontSize: '0.95rem' }}>{vendorProfile.businessPhone}</strong>
-              </div>
-            )}
-            <div>
-              <span style={{ fontSize: '0.72rem', color: '#666', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>System Role</span>
-              <div>
-                <span style={{
-                  display: 'inline-block', fontSize: '0.78rem', fontWeight: 700, padding: '3px 10px', borderRadius: '12px',
-                  backgroundColor: roleName === 'admin' ? '#FEE2E2' : roleName === 'vendor' ? '#E0E7FF' : '#DCFCE7',
-                  color: roleName === 'admin' ? '#991B1B' : roleName === 'vendor' ? '#3730A3' : '#166534',
-                  marginTop: '4px', textTransform: 'capitalize'
-                }}>
-                  {roleName}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Close Button */}
-          <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #EEE', display: 'flex', justifyContent: 'flex-end' }}>
-            <button
-              onClick={onClose}
-              style={{
-                padding: '0.5rem 1.2rem', backgroundColor: '#1E1B4B', color: '#FFF', border: 'none',
-                borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
-                transition: 'background-color 0.15s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#312E81'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = '#1E1B4B'}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Lightbox Zoom / Pan View */}
-      <LogoZoomLightbox
-        isOpen={showLightbox}
-        onClose={() => setShowLightbox(false)}
-        logoSrc={logoSrc}
-      />
-    </>
+    <LogoZoomLightbox
+      isOpen={isOpen}
+      onClose={onClose}
+      logoSrc={logoSrc}
+    />
   );
 };
 

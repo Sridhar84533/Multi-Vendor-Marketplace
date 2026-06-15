@@ -27,7 +27,12 @@ const Navbar = () => {
   return (
     <>
       <nav className={`navbar ${isVendor ? 'navbar-vendor' : ''}`}>
-        <Link to="/" className="navbar-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.35rem', whiteSpace: 'nowrap' }}>
+        <Link
+          to={isVendor ? '#' : '/'}
+          onClick={isVendor ? (e) => e.preventDefault() : undefined}
+          className="navbar-logo"
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.35rem', whiteSpace: 'nowrap', cursor: isVendor ? 'default' : 'pointer' }}
+        >
           <img src={logo} alt="Logo" style={{ width: '30px', height: '30px', objectFit: 'contain' }} />
           Multi-Vendor Marketplace
         </Link>

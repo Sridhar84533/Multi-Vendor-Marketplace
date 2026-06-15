@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchCart, updateCartItem, removeCartItem } from '../redux/cartSlice';
 import Loader from '../components/Loader/Loader';
-import { Trash2 } from 'lucide-react';
+import { Trash2, AlertTriangle, PackageX } from 'lucide-react';
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -27,6 +27,7 @@ const Cart = () => {
 
   const subtotal = items.reduce((sum, item) => sum + (item.product?.discountPrice || item.product?.price || 0) * item.quantity, 0);
   const totalCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const hasOutOfStockItems = items.some((item) => item.product && (item.product.stock ?? 1) <= 0);
 
   if (loading) return <Loader />;
 
@@ -74,7 +75,25 @@ const Cart = () => {
                     <Link to={`/products/${item.product._id}`} style={{ fontSize: '1.1rem', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
                       {item.product.title}
                     </Link>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block' }}>In Stock</span>
+                    {/* Per-item Stock Status */}
+                    {(item.product.stock ?? 1) <= 0 ? (
+                      <span style={{
+                        fontSize: '0.8rem',
+                        color: '#EF4444',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}>
+                        <PackageX size={13} />
+                        Out of Stock — Remove to continue
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: '0.8rem', color: 'var(--success)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'var(--success)', display: 'inline-block' }} />
+                        In Stock
+                      </span>
+                    )}
                     <span style={{ fontSize: '0.8rem', color: '#555', display: 'block', marginTop: '4px' }}>
                       Eligible for FREE Shipping
                     </span>
@@ -127,10 +146,31 @@ const Cart = () => {
             <div style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>
               Subtotal ({totalCount} items): <strong>Rs. {subtotal.toFixed(2)}</strong>
             </div>
+
+            {/* Out of stock warning banner */}
+            {hasOutOfStockItems && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '8px',
+                padding: '10px 12px',
+                backgroundColor: 'rgba(239, 68, 68, 0.07)',
+                border: '1.5px solid rgba(239, 68, 68, 0.28)',
+                borderRadius: '8px',
+                marginBottom: '1rem',
+              }}>
+                <AlertTriangle size={16} color="#EF4444" style={{ flexShrink: 0, marginTop: '1px' }} />
+                <span style={{ fontSize: '0.78rem', color: '#EF4444', fontWeight: 600, lineHeight: 1.4 }}>
+                  Some items are out of stock. Please remove them before proceeding.
+                </span>
+              </div>
+            )}
+
             <button
               onClick={() => navigate('/checkout')}
+              disabled={hasOutOfStockItems}
               className="btn btn-primary"
-              style={{ width: '100%', padding: '0.6rem' }}
+              style={{ width: '100%', padding: '0.6rem', opacity: hasOutOfStockItems ? 0.45 : 1, cursor: hasOutOfStockItems ? 'not-allowed' : 'pointer' }}
             >
               Proceed to Buy
             </button>

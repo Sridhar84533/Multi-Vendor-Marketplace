@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import StarRating from '../StarRating/StarRating';
-import { ArrowLeftRight } from 'lucide-react';
+import { ArrowLeftRight, PackageX } from 'lucide-react';
 
 const FALLBACK_IMG = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&auto=format&fit=crop&q=60';
 
@@ -19,16 +19,43 @@ const ProductCard = ({ product, onCompare, isComparing }) => {
     e.currentTarget.src = FALLBACK_IMG;
   };
 
+  const isOutOfStock = !product.stock || product.stock <= 0;
+
   return (
-    <div className="product-card">
-      <Link to={`/products/${product._id}`}>
+    <div className="product-card" style={{ opacity: isOutOfStock ? 0.85 : 1 }}>
+      <Link to={`/products/${product._id}`} style={{ position: 'relative', display: 'block' }}>
         <img
           src={imgUrl}
           alt={product.title || 'Product'}
           className="product-card-img"
           loading="lazy"
           onError={handleImgError}
+          style={{ opacity: isOutOfStock ? 0.5 : 1, transition: 'opacity 0.2s' }}
         />
+        {isOutOfStock && (
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            background: 'rgba(30, 30, 40, 0.82)',
+            color: '#fff',
+            fontWeight: 700,
+            fontSize: '0.78rem',
+            letterSpacing: '0.06em',
+            padding: '6px 14px',
+            borderRadius: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            whiteSpace: 'nowrap',
+            backdropFilter: 'blur(2px)',
+            border: '1.5px solid rgba(255,80,80,0.5)',
+          }}>
+            <PackageX size={13} color="#FF6B6B" />
+            <span style={{ color: '#FF6B6B' }}>Out of Stock</span>
+          </div>
+        )}
       </Link>
       <div className="product-card-body">
         <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
@@ -55,10 +82,32 @@ const ProductCard = ({ product, onCompare, isComparing }) => {
           )}
         </div>
 
+        {isOutOfStock && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            marginTop: '0.5rem',
+            padding: '4px 10px',
+            backgroundColor: 'rgba(239, 68, 68, 0.08)',
+            border: '1px solid rgba(239, 68, 68, 0.25)',
+            borderRadius: '6px',
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            color: '#EF4444',
+            letterSpacing: '0.04em',
+          }}>
+            <PackageX size={12} />
+            Sold Out — Currently Unavailable
+          </div>
+        )}
         <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.4rem' }}>
           <Link to={`/products/${product._id}`} style={{ flexGrow: 1, minWidth: 0 }}>
-            <button className="btn btn-primary" style={{ width: '100%', padding: '0.4rem 0.3rem', fontSize: '0.78rem' }}>
-              View Details
+            <button
+              className={`btn ${isOutOfStock ? 'btn-outline' : 'btn-primary'}`}
+              style={{ width: '100%', padding: '0.4rem 0.3rem', fontSize: '0.78rem' }}
+            >
+              {isOutOfStock ? 'View Product' : 'View Details'}
             </button>
           </Link>
           <button

@@ -193,10 +193,48 @@ const ProductDetails = () => {
         {/* Right Add to Cart sidebar panel */}
         <div style={{ border: '1px solid #DDD', padding: '1.5rem', borderRadius: '8px', height: 'fit-content' }}>
           <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>Rs. {product.discountPrice || product.price}</div>
-          <div style={{ color: 'var(--success)', fontWeight: 600, fontSize: '0.9rem', marginTop: '0.5rem' }}>
-            {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
-          </div>
-          <span style={{ fontSize: '0.8rem', color: '#555' }}>Sold by: <strong>{product.vendor?.businessName || 'Marketplace Seller'}</strong></span>
+
+          {/* Dynamic Stock Status Badge */}
+          {product.stock > 0 ? (
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              color: 'var(--success)',
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              marginTop: '0.5rem',
+            }}>
+              <span style={{
+                width: '8px', height: '8px', borderRadius: '50%',
+                backgroundColor: 'var(--success)',
+                display: 'inline-block',
+                boxShadow: '0 0 0 3px rgba(34,197,94,0.15)',
+              }} />
+              In Stock
+            </div>
+          ) : (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '7px',
+              marginTop: '0.75rem',
+              padding: '10px 14px',
+              backgroundColor: 'rgba(239, 68, 68, 0.07)',
+              border: '1.5px solid rgba(239, 68, 68, 0.3)',
+              borderRadius: '8px',
+            }}>
+              <ShieldAlert size={18} color="#EF4444" strokeWidth={2} />
+              <div>
+                <div style={{ color: '#EF4444', fontWeight: 700, fontSize: '0.9rem', lineHeight: 1.2 }}>Out of Stock</div>
+                <div style={{ color: '#999', fontSize: '0.72rem', marginTop: '2px' }}>This item is currently unavailable</div>
+              </div>
+            </div>
+          )}
+
+          <span style={{ fontSize: '0.8rem', color: '#555', display: 'block', marginTop: '0.6rem' }}>
+            Sold by: <strong>{product.vendor?.businessName || 'Marketplace Seller'}</strong>
+          </span>
 
           {/* Variants Selector */}
           {product.variants?.map((v) => (
@@ -238,7 +276,7 @@ const ProductDetails = () => {
               disabled={product.stock === 0}
               onClick={handleAddToCart}
               className="btn btn-primary"
-              style={{ width: '100%', padding: '0.7rem' }}
+              style={{ width: '100%', padding: '0.7rem', opacity: product.stock === 0 ? 0.45 : 1, cursor: product.stock === 0 ? 'not-allowed' : 'pointer' }}
             >
               <ShoppingCart size={18} /> Add to Cart
             </button>
@@ -246,7 +284,7 @@ const ProductDetails = () => {
               disabled={product.stock === 0}
               onClick={handleBuyNow}
               className="btn btn-secondary"
-              style={{ width: '100%', padding: '0.7rem' }}
+              style={{ width: '100%', padding: '0.7rem', opacity: product.stock === 0 ? 0.45 : 1, cursor: product.stock === 0 ? 'not-allowed' : 'pointer' }}
             >
               Buy Now
             </button>

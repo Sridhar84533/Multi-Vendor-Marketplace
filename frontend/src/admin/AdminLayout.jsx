@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../redux/authSlice';
+import LogoInfoModal from '../components/LogoInfoModal/LogoInfoModal';
 import {
   LayoutDashboard,
   Users,
@@ -29,6 +30,7 @@ const AdminLayout = ({ children }) => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showLogoModal, setShowLogoModal] = useState(false);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -60,12 +62,14 @@ const AdminLayout = ({ children }) => {
       >
         {/* Logo */}
         <div
+          onClick={() => setShowLogoModal(true)}
           style={{
             padding: '1.5rem 1.2rem',
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
             borderBottom: '1px solid #e5e7eb',
+            cursor: 'pointer',
           }}
         >
           <div
@@ -275,6 +279,9 @@ const AdminLayout = ({ children }) => {
         {/* Page Content */}
         <main style={{ flex: 1, padding: '2rem', color: '#111827' }}>{children}</main>
       </div>
+      {showLogoModal && (
+        <LogoInfoModal isOpen={showLogoModal} onClose={() => setShowLogoModal(false)} user={user} />
+      )}
     </div>
   );
 };

@@ -235,6 +235,66 @@ const ReturnCard = ({ order, onAction, onReply }) => {
   );
 };
 
+/* ── View toggle icons (inline SVG to avoid extra deps) ── */
+const IconList = ({ active }) => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+    <rect x="1" y="2" width="16" height="3" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="1" y="7.5" width="16" height="3" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="1" y="13" width="16" height="3" rx="1" fill={active ? '#fff' : '#6366F1'} />
+  </svg>
+);
+const IconGrid = ({ active }) => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+    <rect x="1" y="1" width="7" height="7" rx="1.5" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="10" y="1" width="7" height="7" rx="1.5" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="1" y="10" width="7" height="7" rx="1.5" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="10" y="10" width="7" height="7" rx="1.5" fill={active ? '#fff' : '#6366F1'} />
+  </svg>
+);
+const IconCompact = ({ active }) => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+    <rect x="1" y="1" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="7" y="1" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="13" y="1" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="1" y="7" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="7" y="7" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="13" y="7" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="1" y="13" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="7" y="13" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="13" y="13" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+  </svg>
+);
+
+/* ── View toggle icons (inline SVG to avoid extra deps) ── */
+const IconList = ({ active }) => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+    <rect x="1" y="2" width="16" height="3" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="1" y="7.5" width="16" height="3" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="1" y="13" width="16" height="3" rx="1" fill={active ? '#fff' : '#6366F1'} />
+  </svg>
+);
+const IconGrid = ({ active }) => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+    <rect x="1" y="1" width="7" height="7" rx="1.5" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="10" y="1" width="7" height="7" rx="1.5" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="1" y="10" width="7" height="7" rx="1.5" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="10" y="10" width="7" height="7" rx="1.5" fill={active ? '#fff' : '#6366F1'} />
+  </svg>
+);
+const IconCompact = ({ active }) => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+    <rect x="1" y="1" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="7" y="1" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="13" y="1" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="1" y="7" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="7" y="7" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="13" y="7" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="1" y="13" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="7" y="13" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="13" y="13" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+  </svg>
+);
+
 /* ─────────────────────────────────────────────────────────────
    Main SellerDashboard
 ───────────────────────────────────────────────────────────── */
@@ -244,6 +304,7 @@ const SellerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [showLogoModal, setShowLogoModal] = useState(false);
   const { user } = useSelector((state) => state.auth);
+  const [viewMode, setViewMode] = useState('list'); // 'list' | 'grid' | 'compact'
 
   const fetchData = async () => {
     try {
@@ -417,10 +478,50 @@ const SellerDashboard = () => {
             overflow: 'hidden',
           }}
         >
-          <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid #F3F4F6' }}>
+          <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid #F3F4F6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
             <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1E293B', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
               <Package size={18} color="#6366F1" /> Recent Orders
             </h2>
+            
+            {/* View Toggle Buttons */}
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', background: '#EEF2FF', padding: '4px', borderRadius: '10px' }}>
+              <button
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: '34px', height: '34px', borderRadius: '7px', border: 'none',
+                  cursor: 'pointer', transition: 'all 0.15s',
+                  background: viewMode === 'list' ? '#6366F1' : '#EEF2FF',
+                }}
+                onClick={() => setViewMode('list')}
+                title="List View"
+              >
+                <IconList active={viewMode === 'list'} />
+              </button>
+              <button
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: '34px', height: '34px', borderRadius: '7px', border: 'none',
+                  cursor: 'pointer', transition: 'all 0.15s',
+                  background: viewMode === 'grid' ? '#6366F1' : '#EEF2FF',
+                }}
+                onClick={() => setViewMode('grid')}
+                title="Grid View"
+              >
+                <IconGrid active={viewMode === 'grid'} />
+              </button>
+              <button
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: '34px', height: '34px', borderRadius: '7px', border: 'none',
+                  cursor: 'pointer', transition: 'all 0.15s',
+                  background: viewMode === 'compact' ? '#6366F1' : '#EEF2FF',
+                }}
+                onClick={() => setViewMode('compact')}
+                title="Compact View"
+              >
+                <IconCompact active={viewMode === 'compact'} />
+              </button>
+            </div>
           </div>
 
           {activeOrders.length === 0 ? (
@@ -428,25 +529,153 @@ const SellerDashboard = () => {
               No orders placed for your products yet.
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
-                <thead>
-                  <tr style={{ background: '#F9FAFB', textAlign: 'left' }}>
-                    {['Order ID', 'Customer', 'Products', 'Amount', 'Payment', 'Status', 'Update'].map((h) => (
-                      <th key={h} style={{ padding: '0.8rem 1rem', fontWeight: 600, color: '#6B7280', whiteSpace: 'nowrap', borderBottom: '1px solid #E5E7EB' }}>
-                        {h}
-                      </th>
+            viewMode === 'list' ? (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
+                  <thead>
+                    <tr style={{ background: '#F9FAFB', textAlign: 'left' }}>
+                      {['Order ID', 'Customer', 'Products', 'Amount', 'Payment', 'Status', 'Update'].map((h) => (
+                        <th key={h} style={{ padding: '0.8rem 1rem', fontWeight: 600, color: '#6B7280', whiteSpace: 'nowrap', borderBottom: '1px solid #E5E7EB' }}>
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activeOrders.map((order) => (
+                      <tr key={order._id} style={{ borderBottom: '1px solid #F3F4F6' }}>
+                        <td style={{ padding: '0.85rem 1rem', color: '#6B7280', fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                          #{order._id.slice(-8).toUpperCase()}
+                        </td>
+                        <td style={{ padding: '0.85rem 1rem', fontWeight: 500 }}>{order.user?.name || '—'}</td>
+                        <td style={{ padding: '0.85rem 1rem' }}>
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                            {order.items.map((item, idx) => {
+                              const imgUrl = getItemImg(item);
+                              return imgUrl ? (
+                                <img
+                                  key={idx}
+                                  src={imgUrl}
+                                  alt={item.title}
+                                  title={`${item.title} ×${item.quantity}`}
+                                  style={{ width: '36px', height: '36px', objectFit: 'contain', borderRadius: '4px', border: '1px solid #E5E7EB', background: '#fff' }}
+                                  onError={(e) => { e.target.style.display = 'none'; }}
+                                />
+                              ) : (
+                                <span key={idx} style={{ fontSize: '0.75rem', color: '#6B7280' }}>{item.title}</span>
+                              );
+                            })}
+                          </div>
+                        </td>
+                        <td style={{ padding: '0.85rem 1rem', fontWeight: 600 }}>₹{order.total?.toLocaleString()}</td>
+                        <td style={{ padding: '0.85rem 1rem' }}>
+                          <span
+                            style={{
+                              fontWeight: 700,
+                              fontSize: '0.8rem',
+                              color: order.paymentStatus === 'Paid' ? '#059669' : '#D97706',
+                            }}
+                          >
+                            {order.paymentStatus}
+                          </span>
+                        </td>
+                        <td style={{ padding: '0.85rem 1rem' }}>
+                          <span
+                            style={{
+                              padding: '0.25rem 0.6rem',
+                              borderRadius: '20px',
+                              fontSize: '0.78rem',
+                              fontWeight: 700,
+                              background:
+                                order.status === 'Delivered' ? '#DCFCE7' :
+                                order.status === 'Cancelled' ? '#FEE2E2' :
+                                '#EEF2FF',
+                              color:
+                                order.status === 'Delivered' ? '#166534' :
+                                order.status === 'Cancelled' ? '#991B1B' :
+                                '#4338CA',
+                            }}
+                          >
+                            {order.status}
+                          </span>
+                        </td>
+                        <td style={{ padding: '0.85rem 1rem' }}>
+                          {order.status !== 'Delivered' && order.status !== 'Cancelled' && order.status !== 'Refunded' && (
+                            <select
+                              onChange={(e) => handleUpdateStatus(order._id, e.target.value)}
+                              value={order.status}
+                              style={{
+                                padding: '0.3rem 0.5rem',
+                                border: '1px solid #D1D5DB',
+                                borderRadius: '6px',
+                                fontSize: '0.82rem',
+                                background: '#fff',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              <option value="Order Placed">Placed</option>
+                              <option value="Packed">Packed</option>
+                              <option value="Shipped">Shipped</option>
+                              <option value="Out For Delivery">Out For Delivery</option>
+                              <option value="Delivered">Delivered</option>
+                            </select>
+                          )}
+                        </td>
+                      </tr>
                     ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {activeOrders.map((order) => (
-                    <tr key={order._id} style={{ borderBottom: '1px solid #F3F4F6' }}>
-                      <td style={{ padding: '0.85rem 1rem', color: '#6B7280', fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                  </tbody>
+                </table>
+              </div>
+            ) : viewMode === 'grid' ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem', padding: '1.25rem' }}>
+                {activeOrders.map((order) => (
+                  <div
+                    key={order._id}
+                    style={{
+                      border: '1px solid #E5E7EB',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      background: '#fff',
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 20px rgba(99,102,241,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)'; e.currentTarget.style.transform = 'none'; }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.85rem 1rem', borderBottom: '1px solid #F3F4F6', background: '#FAFAFA' }}>
+                      <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.8rem', color: '#6B7280' }}>
                         #{order._id.slice(-8).toUpperCase()}
-                      </td>
-                      <td style={{ padding: '0.85rem 1rem', fontWeight: 500 }}>{order.user?.name || '—'}</td>
-                      <td style={{ padding: '0.85rem 1rem' }}>
+                      </span>
+                      <span
+                        style={{
+                          padding: '0.25rem 0.6rem',
+                          borderRadius: '20px',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          background:
+                            order.status === 'Delivered' ? '#DCFCE7' :
+                            order.status === 'Cancelled' ? '#FEE2E2' :
+                            '#EEF2FF',
+                          color:
+                            order.status === 'Delivered' ? '#166534' :
+                            order.status === 'Cancelled' ? '#991B1B' :
+                            '#4338CA',
+                        }}
+                      >
+                        {order.status}
+                      </span>
+                    </div>
+
+                    <div style={{ padding: '1rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                        <span style={{ fontSize: '0.82rem', color: '#6B7280' }}>Customer:</span>
+                        <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#111827' }}>{order.user?.name || '—'}</span>
+                      </div>
+
+                      <div>
+                        <div style={{ fontSize: '0.82rem', color: '#6B7280', marginBottom: '6px' }}>Products:</div>
                         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
                           {order.items.map((item, idx) => {
                             const imgUrl = getItemImg(item);
@@ -456,7 +685,7 @@ const SellerDashboard = () => {
                                 src={imgUrl}
                                 alt={item.title}
                                 title={`${item.title} ×${item.quantity}`}
-                                style={{ width: '36px', height: '36px', objectFit: 'contain', borderRadius: '4px', border: '1px solid #E5E7EB', background: '#fff' }}
+                                style={{ width: '40px', height: '40px', objectFit: 'contain', borderRadius: '6px', border: '1px solid #E5E7EB', background: '#fff' }}
                                 onError={(e) => { e.target.style.display = 'none'; }}
                               />
                             ) : (
@@ -464,66 +693,123 @@ const SellerDashboard = () => {
                             );
                           })}
                         </div>
-                      </td>
-                      <td style={{ padding: '0.85rem 1rem', fontWeight: 600 }}>₹{order.total?.toLocaleString()}</td>
-                      <td style={{ padding: '0.85rem 1rem' }}>
-                        <span
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '0.5rem', borderTop: '1px solid #F3F4F6' }}>
+                        <div>
+                          <div style={{ fontSize: '0.82rem', color: '#6B7280' }}>Total:</div>
+                          <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#111827' }}>₹{order.total?.toLocaleString()}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '0.82rem', color: '#6B7280' }}>Payment:</div>
+                          <span style={{ fontWeight: 700, fontSize: '0.82rem', color: order.paymentStatus === 'Paid' ? '#059669' : '#D97706' }}>
+                            {order.paymentStatus}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {order.status !== 'Delivered' && order.status !== 'Cancelled' && order.status !== 'Refunded' && (
+                      <div style={{ padding: '0.75rem 1rem', background: '#FAFAFA', borderTop: '1px solid #F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '0.82rem', color: '#6B7280', fontWeight: 500 }}>Update Status:</span>
+                        <select
+                          onChange={(e) => handleUpdateStatus(order._id, e.target.value)}
+                          value={order.status}
                           style={{
-                            fontWeight: 700,
-                            fontSize: '0.8rem',
-                            color: order.paymentStatus === 'Paid' ? '#059669' : '#D97706',
+                            padding: '0.25rem 0.5rem',
+                            border: '1px solid #D1D5DB',
+                            borderRadius: '6px',
+                            fontSize: '0.82rem',
+                            background: '#fff',
+                            cursor: 'pointer',
                           }}
                         >
-                          {order.paymentStatus}
-                        </span>
-                      </td>
-                      <td style={{ padding: '0.85rem 1rem' }}>
-                        <span
+                          <option value="Order Placed">Placed</option>
+                          <option value="Packed">Packed</option>
+                          <option value="Shipped">Shipped</option>
+                          <option value="Out For Delivery">Out For Delivery</option>
+                          <option value="Delivered">Delivered</option>
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '0.6rem', padding: '1rem' }}>
+                {activeOrders.map((order) => (
+                  <div
+                    key={order._id}
+                    style={{
+                      border: '1px solid #E5E7EB',
+                      borderRadius: '8px',
+                      padding: '0.75rem',
+                      background: '#fff',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.5rem',
+                      transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366F1'; e.currentTarget.style.boxShadow = '0 2px 10px rgba(99,102,241,0.08)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#E5E7EB'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)'; }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.75rem', color: '#6B7280' }}>
+                        #{order._id.slice(-6).toUpperCase()}
+                      </span>
+                      <span
+                        style={{
+                          padding: '1px 6px',
+                          borderRadius: '12px',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          background:
+                            order.status === 'Delivered' ? '#DCFCE7' :
+                            order.status === 'Cancelled' ? '#FEE2E2' :
+                            '#EEF2FF',
+                          color:
+                            order.status === 'Delivered' ? '#166534' :
+                            order.status === 'Cancelled' ? '#991B1B' :
+                            '#4338CA',
+                        }}
+                      >
+                        {order.status}
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#111827', display: 'flex', justifyContent: 'space-between' }}>
+                      <span>{order.user?.name || '—'}</span>
+                      <span style={{ color: '#6366F1' }}>₹{order.total?.toLocaleString()}</span>
+                    </div>
+
+                    {order.status !== 'Delivered' && order.status !== 'Cancelled' && order.status !== 'Refunded' && (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px', borderTop: '1px solid #F3F4F6', paddingTop: '4px' }}>
+                        <span style={{ fontSize: '0.72rem', color: '#6B7280' }}>Update:</span>
+                        <select
+                          onChange={(e) => handleUpdateStatus(order._id, e.target.value)}
+                          value={order.status}
                           style={{
-                            padding: '0.25rem 0.6rem',
-                            borderRadius: '20px',
-                            fontSize: '0.78rem',
-                            fontWeight: 700,
-                            background:
-                              order.status === 'Delivered' ? '#DCFCE7' :
-                              order.status === 'Cancelled' ? '#FEE2E2' :
-                              '#EEF2FF',
-                            color:
-                              order.status === 'Delivered' ? '#166534' :
-                              order.status === 'Cancelled' ? '#991B1B' :
-                              '#4338CA',
+                            padding: '1px 3px',
+                            border: '1px solid #D1D5DB',
+                            borderRadius: '4px',
+                            fontSize: '0.75rem',
+                            background: '#fff',
+                            cursor: 'pointer',
                           }}
                         >
-                          {order.status}
-                        </span>
-                      </td>
-                      <td style={{ padding: '0.85rem 1rem' }}>
-                        {order.status !== 'Delivered' && order.status !== 'Cancelled' && order.status !== 'Refunded' && (
-                          <select
-                            onChange={(e) => handleUpdateStatus(order._id, e.target.value)}
-                            value={order.status}
-                            style={{
-                              padding: '0.3rem 0.5rem',
-                              border: '1px solid #D1D5DB',
-                              borderRadius: '6px',
-                              fontSize: '0.82rem',
-                              background: '#fff',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            <option value="Order Placed">Placed</option>
-                            <option value="Packed">Packed</option>
-                            <option value="Shipped">Shipped</option>
-                            <option value="Out For Delivery">Out For Delivery</option>
-                            <option value="Delivered">Delivered</option>
-                          </select>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                          <option value="Order Placed">Placed</option>
+                          <option value="Packed">Packed</option>
+                          <option value="Shipped">Shipped</option>
+                          <option value="Out For Delivery">Out For Delivery</option>
+                          <option value="Delivered">Delivered</option>
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )
           )}
         </section>
       </main>

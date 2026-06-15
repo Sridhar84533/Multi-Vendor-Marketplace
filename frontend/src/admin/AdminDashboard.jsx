@@ -76,10 +76,41 @@ const statusColor = (status) => {
   return map[status] || '#94a3b8';
 };
 
+/* ── View toggle icons (inline SVG to avoid extra deps) ── */
+const IconList = ({ active }) => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+    <rect x="1" y="2" width="16" height="3" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="1" y="7.5" width="16" height="3" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="1" y="13" width="16" height="3" rx="1" fill={active ? '#fff' : '#6366F1'} />
+  </svg>
+);
+const IconGrid = ({ active }) => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+    <rect x="1" y="1" width="7" height="7" rx="1.5" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="10" y="1" width="7" height="7" rx="1.5" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="1" y="10" width="7" height="7" rx="1.5" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="10" y="10" width="7" height="7" rx="1.5" fill={active ? '#fff' : '#6366F1'} />
+  </svg>
+);
+const IconCompact = ({ active }) => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+    <rect x="1" y="1" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="7" y="1" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="13" y="1" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="1" y="7" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="7" y="7" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="13" y="7" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="1" y="13" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="7" y="13" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+    <rect x="13" y="13" width="4" height="4" rx="1" fill={active ? '#fff' : '#6366F1'} />
+  </svg>
+);
+
 const AdminDashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [viewMode, setViewMode] = useState('list'); // 'list' | 'grid' | 'compact'
 
   useEffect(() => {
     const fetchData = async () => {
@@ -190,69 +221,209 @@ const AdminDashboard = () => {
                   boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                 }}
               >
-                <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#111827', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Clock size={18} color="#2563eb" /> Recent Orders
-                </h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#111827', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                    <Clock size={18} color="#2563eb" /> Recent Orders
+                  </h2>
+                  
+                  {/* View Toggle Buttons */}
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center', background: '#EEF2FF', padding: '4px', borderRadius: '10px' }}>
+                    <button
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        width: '32px', height: '32px', borderRadius: '7px', border: 'none',
+                        cursor: 'pointer', transition: 'all 0.15s',
+                        background: viewMode === 'list' ? '#6366F1' : '#EEF2FF',
+                      }}
+                      onClick={() => setViewMode('list')}
+                      title="List View"
+                    >
+                      <IconList active={viewMode === 'list'} />
+                    </button>
+                    <button
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        width: '32px', height: '32px', borderRadius: '7px', border: 'none',
+                        cursor: 'pointer', transition: 'all 0.15s',
+                        background: viewMode === 'grid' ? '#6366F1' : '#EEF2FF',
+                      }}
+                      onClick={() => setViewMode('grid')}
+                      title="Grid View"
+                    >
+                      <IconGrid active={viewMode === 'grid'} />
+                    </button>
+                    <button
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        width: '32px', height: '32px', borderRadius: '7px', border: 'none',
+                        cursor: 'pointer', transition: 'all 0.15s',
+                        background: viewMode === 'compact' ? '#6366F1' : '#EEF2FF',
+                      }}
+                      onClick={() => setViewMode('compact')}
+                      title="Compact View"
+                    >
+                      <IconCompact active={viewMode === 'compact'} />
+                    </button>
+                  </div>
+                </div>
+
                 {data.recentOrders?.length === 0 ? (
                   <p style={{ color: '#9ca3af', fontSize: '0.9rem' }}>No orders yet.</p>
                 ) : (
-                  <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-                      <thead>
-                        <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-                          {['Order ID', 'Customer', 'Amount', 'Status'].map((h) => (
-                            <th
-                              key={h}
-                              style={{
-                                padding: '0.6rem 0.8rem',
-                                textAlign: 'left',
-                                color: '#4b5563',
-                                fontWeight: 600,
-                                fontSize: '0.78rem',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em',
-                              }}
-                            >
-                              {h}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {data.recentOrders?.map((order) => (
-                          <tr
-                            key={order._id}
-                            style={{ borderBottom: '1px solid #f3f4f6' }}
-                          >
-                            <td style={{ padding: '0.75rem 0.8rem', color: '#4b5563', fontFamily: 'monospace', fontSize: '0.78rem' }}>
-                              #{order._id?.slice(-6)}
-                            </td>
-                            <td style={{ padding: '0.75rem 0.8rem', color: '#111827' }}>
-                              {order.user?.name || 'Guest'}
-                            </td>
-                            <td style={{ padding: '0.75rem 0.8rem', color: '#d97706', fontWeight: 600 }}>
-                              ₹{order.total?.toLocaleString('en-IN')}
-                            </td>
-                            <td style={{ padding: '0.75rem 0.8rem' }}>
-                              <span
+                  viewMode === 'list' ? (
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                        <thead>
+                          <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                            {['Order ID', 'Customer', 'Amount', 'Status'].map((h) => (
+                              <th
+                                key={h}
                                 style={{
-                                  padding: '2px 10px',
-                                  borderRadius: '20px',
-                                  fontSize: '0.75rem',
+                                  padding: '0.6rem 0.8rem',
+                                  textAlign: 'left',
+                                  color: '#4b5563',
                                   fontWeight: 600,
-                                  background: `${statusColor(order.status)}15`,
-                                  color: statusColor(order.status),
-                                  border: `1px solid ${statusColor(order.status)}30`,
+                                  fontSize: '0.78rem',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em',
                                 }}
                               >
-                                {order.status}
-                              </span>
-                            </td>
+                                {h}
+                              </th>
+                            ))}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody>
+                          {data.recentOrders?.map((order) => (
+                            <tr
+                              key={order._id}
+                              style={{ borderBottom: '1px solid #f3f4f6' }}
+                            >
+                              <td style={{ padding: '0.75rem 0.8rem', color: '#4b5563', fontFamily: 'monospace', fontSize: '0.78rem' }}>
+                                #{order._id?.slice(-6)}
+                              </td>
+                              <td style={{ padding: '0.75rem 0.8rem', color: '#111827' }}>
+                                {order.user?.name || 'Guest'}
+                              </td>
+                              <td style={{ padding: '0.75rem 0.8rem', color: '#d97706', fontWeight: 600 }}>
+                                ₹{order.total?.toLocaleString('en-IN')}
+                              </td>
+                              <td style={{ padding: '0.75rem 0.8rem' }}>
+                                <span
+                                  style={{
+                                    padding: '2px 10px',
+                                    borderRadius: '20px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 600,
+                                    background: `${statusColor(order.status)}15`,
+                                    color: statusColor(order.status),
+                                    border: `1px solid ${statusColor(order.status)}30`,
+                                  }}
+                                >
+                                  {order.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : viewMode === 'grid' ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem', marginTop: '0.5rem' }}>
+                      {data.recentOrders?.map((order) => (
+                        <div
+                          key={order._id}
+                          style={{
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '12px',
+                            padding: '1rem',
+                            background: '#ffffff',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.75rem',
+                            transition: 'all 0.2s',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 15px rgba(0,0,0,0.05)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)'; e.currentTarget.style.transform = 'none'; }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.78rem', color: '#4b5563' }}>
+                              #{order._id?.slice(-6).toUpperCase()}
+                            </span>
+                            <span
+                              style={{
+                                padding: '2px 10px',
+                                borderRadius: '20px',
+                                fontSize: '0.72rem',
+                                fontWeight: 600,
+                                background: `${statusColor(order.status)}15`,
+                                color: statusColor(order.status),
+                                border: `1px solid ${statusColor(order.status)}30`,
+                              }}
+                            >
+                              {order.status}
+                            </span>
+                          </div>
+
+                          <div>
+                            <div style={{ fontSize: '0.78rem', color: '#4b5563' }}>Customer:</div>
+                            <strong style={{ fontSize: '0.9rem', color: '#111827' }}>{order.user?.name || 'Guest'}</strong>
+                          </div>
+
+                          <div style={{ marginTop: 'auto', paddingTop: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '1px solid #f3f4f6' }}>
+                            <span style={{ fontSize: '0.78rem', color: '#4b5563' }}>Amount:</span>
+                            <span style={{ fontSize: '1.05rem', fontWeight: 700, color: '#d97706' }}>₹{order.total?.toLocaleString('en-IN')}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '0.5rem', marginTop: '0.5rem' }}>
+                      {data.recentOrders?.map((order) => (
+                        <div
+                          key={order._id}
+                          style={{
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '8px',
+                            padding: '0.65rem 0.75rem',
+                            background: '#ffffff',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.4rem',
+                            transition: 'all 0.15s',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366F1'; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.72rem', color: '#4b5563' }}>
+                              #{order._id?.slice(-6).toUpperCase()}
+                            </span>
+                            <span
+                              style={{
+                                padding: '1px 6px',
+                                borderRadius: '12px',
+                                fontSize: '0.65rem',
+                                fontWeight: 600,
+                                background: `${statusColor(order.status)}15`,
+                                color: statusColor(order.status),
+                              }}
+                            >
+                              {order.status}
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', fontWeight: 600, color: '#111827' }}>
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '90px' }}>
+                              {order.user?.name || 'Guest'}
+                            </span>
+                            <span style={{ color: '#d97706' }}>₹{order.total?.toLocaleString('en-IN')}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )
                 )}
               </div>
 

@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import API from '../services/api';
 import { LayoutDashboard, ShoppingBag, PlusCircle } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import logo from '../assets/logo.png';
+import LogoInfoModal from '../components/LogoInfoModal/LogoInfoModal';
 
 const AddProduct = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
+  const [showLogoModal, setShowLogoModal] = useState(false);
+  const { user } = useSelector((state) => state.auth);
   const [description, setDescription] = useState('');
   const [shortDescription, setShortDescription] = useState('');
   const [category, setCategory] = useState('Electronics');
@@ -88,7 +92,10 @@ const AddProduct = () => {
           gap: '0.25rem',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.5rem 0.75rem', marginBottom: '1.5rem' }}>
+        <div 
+          onClick={() => setShowLogoModal(true)}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.5rem 0.75rem', marginBottom: '1.5rem', cursor: 'pointer' }}
+        >
           <img src={logo} alt="Logo" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
           <span style={{ fontWeight: 700, fontSize: '1rem', color: '#C7D2FE' }}>Seller Central</span>
         </div>
@@ -197,6 +204,7 @@ const AddProduct = () => {
         </form>
         </div>
       </main>
+      <LogoInfoModal isOpen={showLogoModal} onClose={() => setShowLogoModal(false)} user={user} />
     </div>
   );
 };

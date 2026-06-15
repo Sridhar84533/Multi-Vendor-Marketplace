@@ -5,6 +5,7 @@ import API from '../services/api';
 import Loader from '../components/Loader/Loader';
 import { IndianRupee, ShoppingBag, Heart, User, MapPin, Award, ArrowRight, Package, LayoutDashboard, PlusCircle } from 'lucide-react';
 import logo from '../assets/logo.png';
+import LogoInfoModal from '../components/LogoInfoModal/LogoInfoModal';
 
 const UserDashboard = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const UserDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showLogoModal, setShowLogoModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -68,7 +70,10 @@ const UserDashboard = () => {
           flexDirection: 'column',
           gap: '0.25rem',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.5rem 0.75rem', marginBottom: '1.5rem' }}>
+          <div 
+            onClick={() => setShowLogoModal(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.5rem 0.75rem', marginBottom: '1.5rem', cursor: 'pointer' }}
+          >
             <img src={logo} alt="Logo" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
             <span style={{ fontWeight: 700, fontSize: '1rem', color: '#C7D2FE' }}>Seller Central</span>
           </div>
@@ -180,6 +185,7 @@ const UserDashboard = () => {
             </div>
           </div>
         </main>
+        <LogoInfoModal isOpen={showLogoModal} onClose={() => setShowLogoModal(false)} user={user} />
       </div>
     );
   }

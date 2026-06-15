@@ -1,15 +1,51 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Mic, Volume2 } from 'lucide-react';
 import API from '../../services/api';
 
 const SearchBar = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [query, setQuery] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const wrapperRef = useRef(null);
+
+  // Sync category and search query from URL params
+  useEffect(() => {
+    const catParam = searchParams.get('category');
+    const searchParam = searchParams.get('search');
+    if (catParam) {
+      setSelectedCategory(catParam);
+    } else {
+      setSelectedCategory('');
+    }
+    if (searchParam) {
+      setQuery(searchParam);
+    } else {
+      setQuery('');
+    }
+  }, [searchParams]);
+
+  // Fetch unique categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await API.get('/products?limit=1');
+        if (res.data && res.data.categories) {
+          setCategories(res.data.categories);
+        }
+      } catch (err) {
+        console.error('Failed to fetch categories for search dropdown', err);
+        // Fallback default categories
+        setCategories(['Electronics', 'Fashion', 'Home & Kitchen', 'Books', 'Sports', 'Beauty']);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -42,16 +78,21 @@ const SearchBar = () => {
 
   const handleSearch = (e) => {
     e?.preventDefault();
-    if (query.trim()) {
-      // Save query to popular/recent searches simulation
+    const cleanQuery = query.trim();
+    if (cleanQuery) {
       const recents = JSON.parse(localStorage.getItem('recentSearches') || '[]');
-      if (!recents.includes(query)) {
-        recents.unshift(query);
+      if (!recents.includes(cleanQuery)) {
+        recents.unshift(cleanQuery);
         localStorage.setItem('recentSearches', JSON.stringify(recents.slice(0, 5)));
       }
-      setShowSuggestions(false);
-      navigate(`/products?search=${encodeURIComponent(query)}`);
     }
+    setShowSuggestions(false);
+    
+    const searchParam = cleanQuery ? `search=${encodeURIComponent(cleanQuery)}` : '';
+    const categoryParam = selectedCategory ? `category=${encodeURIComponent(selectedCategory)}` : '';
+    const queryStr = [searchParam, categoryParam].filter(Boolean).join('&');
+    
+    navigate(`/products${queryStr ? `?${queryStr}` : ''}`);
   };
 
   // Voice Search Trigger
@@ -90,7 +131,19 @@ const SearchBar = () => {
 
   return (
     <div ref={wrapperRef} className="navbar-search-container" style={{ position: 'relative' }}>
-      <form onSubmit={handleSearch} style={{ display: 'flex', width: '100%' }}>
+      <form onSubmit={handleSearch} className="navbar-search-form">
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="navbar-search-category-select"
+        >
+          <option value="">All</option>
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
         <input
           type="text"
           value={query}

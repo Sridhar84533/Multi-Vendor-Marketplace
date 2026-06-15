@@ -38,6 +38,13 @@ exports.createOrder = async (req, res) => {
       await product.save();
     }
 
+    // Server-side delivery charge enforcement
+    // Free delivery for orders Rs. 1000 and above; Rs. 49 otherwise
+    const FREE_DELIVERY_THRESHOLD = 1000;
+    const DELIVERY_CHARGE = 49;
+    const calculatedShippingFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_CHARGE;
+    const calculatedTotal = subtotal + calculatedShippingFee - (discount || 0) - (loyaltyPointsUsed || 0);
+
     const estimatedDelivery = new Date();
     estimatedDelivery.setDate(estimatedDelivery.getDate() + 5); // 5 days delivery
 
@@ -46,11 +53,11 @@ exports.createOrder = async (req, res) => {
       items,
       shippingAddress,
       subtotal,
-      shippingFee,
-      tax,
+      shippingFee: calculatedShippingFee,
+      tax: 0,
       discount,
       loyaltyPointsUsed,
-      total,
+      total: calculatedTotal,
       couponCode,
       paymentMethod,
       estimatedDelivery,
@@ -108,8 +115,8 @@ exports.createOrder = async (req, res) => {
         await sendEmail({
           to: req.user.email,
           subject: `Order Invoice - INV-${order._id.toString().toUpperCase()}`,
-          text: `Hello ${req.user.name},\n\nThank you for your order! Your tax invoice is attached.\n\nTotal: Rs. ${order.total.toFixed(2)}\n\nThank you,\nMulti-Vendor Marketplace`,
-          html: `<p>Hello ${req.user.name},</p><p>Thank you for your order! Your tax invoice is attached.</p><p>Total: <strong>Rs. ${order.total.toFixed(2)}</strong></p><p>Thank you,<br/>Multi-Vendor Marketplace</p>`,
+          text: `Hello ${req.user.name},\n\nThank you for your order! Your order receipt is attached.\n\nTotal: Rs. ${order.total.toFixed(2)}\n\nThank you,\nMulti-Vendor Marketplace`,
+          html: `<p>Hello ${req.user.name},</p><p>Thank you for your order! Your order receipt is attached.</p><p>Total: <strong>Rs. ${order.total.toFixed(2)}</strong></p><p>Thank you,<br/>Multi-Vendor Marketplace</p>`,
           attachments: [
             {
               filename: `Invoice-${order._id}.pdf`,

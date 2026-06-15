@@ -18,7 +18,7 @@ exports.generateInvoicePDF = (order, path) => {
       .text('MULTI-VENDOR MARKETPLACE', 50, 50, { bold: true })
       .fontSize(10)
       .fillColor('#565959')
-      .text('Tax Invoice/Bill of Sale', 50, 75)
+      .text('Invoice / Bill of Sale', 50, 75)
       .moveDown();
 
     // Order Details
@@ -85,10 +85,6 @@ exports.generateInvoicePDF = (order, path) => {
       .text('Shipping Fee:', 350, y)
       .text(`Rs. ${order.shippingFee.toFixed(2)}`, 460, y);
 
-    y += 15;
-    doc
-      .text('GST (18% Included):', 350, y)
-      .text(`Rs. ${(order.tax || 0).toFixed(2)}`, 460, y);
 
     y += 15;
     doc

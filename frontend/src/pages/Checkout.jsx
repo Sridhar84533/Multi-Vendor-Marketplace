@@ -230,8 +230,10 @@ const Checkout = () => {
   }, []);
 
   const subtotal = items.reduce((sum, item) => sum + (item.product?.discountPrice || item.product?.price || 0) * item.quantity, 0);
-  const shippingFee = subtotal > 500 ? 0 : 40;
-  const tax = Math.round(subtotal * 0.18);
+  const FREE_DELIVERY_THRESHOLD = 1000;
+  const DELIVERY_CHARGE = 49;
+  const shippingFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_CHARGE;
+  const tax = 0;
   const loyaltyPointsAvailable = user?.loyaltyPoints || 0;
   const loyaltyPointsUsed = useLoyalty ? Math.min(loyaltyPointsAvailable, subtotal) : 0;
   const total = subtotal + shippingFee + tax - discount - loyaltyPointsUsed;
@@ -474,11 +476,24 @@ const Checkout = () => {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Shipping &amp; handling:</span>
-                <span>{shippingFee === 0 ? <span style={{ color: 'green' }}>FREE</span> : `Rs. ${shippingFee.toFixed(2)}`}</span>
+                <span>{shippingFee === 0 ? <span style={{ color: 'green', fontWeight: 600 }}>FREE</span> : `Rs. ${shippingFee.toFixed(2)}`}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Estimated Tax (18% GST):</span><span>Rs. {tax.toFixed(2)}</span>
-              </div>
+              {/* Free delivery progress banner */}
+              {shippingFee > 0 ? (
+                <div style={{ background: 'linear-gradient(135deg, #fff8e1, #fff3cd)', border: '1px solid #ffc107', borderRadius: '8px', padding: '10px 12px', marginTop: '4px' }}>
+                  <p style={{ margin: '0 0 6px', fontSize: '0.8rem', fontWeight: 600, color: '#856404' }}>
+                    🚚 Add <strong>Rs. {(1000 - subtotal).toFixed(2)}</strong> more to get <span style={{ color: 'green' }}>FREE Delivery!</span>
+                  </p>
+                  <div style={{ background: '#e0e0e0', borderRadius: '999px', height: '6px', overflow: 'hidden' }}>
+                    <div style={{ width: `${Math.min((subtotal / 1000) * 100, 100)}%`, background: 'linear-gradient(90deg, #ffc107, #ff9800)', height: '100%', borderRadius: '999px', transition: 'width 0.4s ease' }} />
+                  </div>
+                  <p style={{ margin: '4px 0 0', fontSize: '0.72rem', color: '#856404' }}>Rs. {subtotal.toFixed(2)} / Rs. 1,000 for free delivery</p>
+                </div>
+              ) : (
+                <div style={{ background: 'linear-gradient(135deg, #e8f5e9, #f1f8e9)', border: '1px solid #66bb6a', borderRadius: '8px', padding: '8px 12px', marginTop: '4px', fontSize: '0.8rem', color: '#2e7d32', fontWeight: 600 }}>
+                  🎉 You've unlocked <span style={{ color: 'green' }}>FREE Delivery!</span>
+                </div>
+              )}
               {discount > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--danger)', fontWeight: 600 }}>
                   <span>Coupon Discount:</span><span>- Rs. {discount.toFixed(2)}</span>

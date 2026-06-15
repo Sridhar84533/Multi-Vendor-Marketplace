@@ -68,16 +68,13 @@ const OrderSuccess = () => {
               <span style={{ color: 'var(--text-muted)' }}>Total Amount Paid:</span>
               <span style={{ fontWeight: 700, color: '#B12704' }}>Rs. {order.total.toFixed(2)}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--text-muted)' }}>GST (18% Included):</span>
-              <span style={{ fontWeight: 600 }}>Rs. {(order.tax || 0).toFixed(2)}</span>
-            </div>
+
           </div>
         </div>
 
         <div style={{ backgroundColor: '#E7F4F9', border: '1px solid #97D1E6', borderRadius: '6px', padding: '1rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.88rem', color: '#005A70' }}>
           <FileText size={18} />
-          <span>A copy of the tax invoice receipt has been sent to your email.</span>
+          <span>A copy of your order receipt has been sent to your email.</span>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>

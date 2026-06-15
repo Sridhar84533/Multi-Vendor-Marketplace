@@ -152,6 +152,11 @@ const ReturnCard = ({ order, onAction, onReply }) => {
           >
             <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#B91C1C', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Customer's Return Reason
+              {order.returnType && (
+                <span style={{ marginLeft: '8px', background: order.returnType === 'replacement' ? '#DBEAFE' : '#D1FAE5', color: order.returnType === 'replacement' ? '#1D4ED8' : '#065F46', padding: '1px 8px', borderRadius: '10px', fontSize: '0.7rem', fontWeight: 700 }}>
+                  {order.returnType === 'replacement' ? '🔄 Replacement' : '💰 Refund'}
+                </span>
+              )}
             </p>
             <p style={{ fontSize: '0.9rem', color: '#374151', margin: 0 }}>{order.returnReason}</p>
           </div>
@@ -205,7 +210,7 @@ const ReturnCard = ({ order, onAction, onReply }) => {
               {sent ? 'Reply Sent ✓' : sending ? 'Sending…' : 'Send Reply'}
             </button>
             <button
-              onClick={() => onAction(order._id, 'Return Approved')}
+              onClick={() => onAction(order._id, 'approve')}
               style={{
                 display: 'flex', alignItems: 'center', gap: '6px',
                 padding: '0.45rem 1rem',
@@ -214,10 +219,10 @@ const ReturnCard = ({ order, onAction, onReply }) => {
                 fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
               }}
             >
-              <CheckCircle size={15} /> Approve Return
+              <CheckCircle size={15} /> Approve {order.returnType === 'replacement' ? 'Replacement' : 'Refund'}
             </button>
             <button
-              onClick={() => onAction(order._id, 'Cancelled')}
+              onClick={() => onAction(order._id, 'reject')}
               style={{
                 display: 'flex', alignItems: 'center', gap: '6px',
                 padding: '0.45rem 1rem',
@@ -299,6 +304,22 @@ const SellerDashboard = () => {
       fetchData();
     } catch (err) {
       alert('Failed to update order status');
+    }
+  };
+
+  const handleReturnAction = async (orderId, action) => {
+    try {
+      if (action === 'approve') {
+        await API.put(`/orders/${orderId}/approve-return`);
+        alert('Return approved. Customer has been notified.');
+      } else if (action === 'reject') {
+        const reason = window.prompt('Enter rejection reason (optional):');
+        await API.put(`/orders/${orderId}/reject-return`, { reason: reason || '' });
+        alert('Return rejected. Customer has been notified.');
+      }
+      fetchData();
+    } catch (err) {
+      alert('Action failed. Please try again.');
     }
   };
 
@@ -401,43 +422,26 @@ const SellerDashboard = () => {
           ))}
         </div>
 
-        {/* ── Return Requests Section ── */}
-        <section style={{ marginBottom: '2.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem' }}>
-            {returnRequests.length > 0 && <AlertTriangle size={20} color="#B45309" />}
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#1E293B' }}>
-              {returnRequests.length > 0
-                ? `⚠️ ${returnRequests.length} Return/Replacement Request${returnRequests.length > 1 ? 's' : ''} Pending`
-                : '✅ No Pending Return Requests'}
-            </h2>
-          </div>
 
-          {returnRequests.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        {/* ── Return Requests Section ── */}
+        {returnRequests.length > 0 && (
+          <section style={{ marginBottom: '2rem' }}>
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#92400E', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertTriangle size={18} color="#F59E0B" />
+              {returnRequests.length} Return/Replacement Request{returnRequests.length > 1 ? 's' : ''} Pending
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {returnRequests.map((order) => (
                 <ReturnCard
                   key={order._id}
                   order={order}
-                  onAction={handleUpdateStatus}
+                  onAction={handleReturnAction}
                   onReply={handleVendorReply}
                 />
               ))}
             </div>
-          ) : (
-            <div
-              style={{
-                background: '#F0FDF4',
-                border: '1px solid #BBF7D0',
-                borderRadius: '10px',
-                padding: '1.25rem 1.5rem',
-                color: '#166534',
-                fontSize: '0.9rem',
-              }}
-            >
-              All return requests have been handled. Great work! 🎉
-            </div>
-          )}
-        </section>
+          </section>
+        )}
 
         {/* ── Active Orders Table ── */}
         <section

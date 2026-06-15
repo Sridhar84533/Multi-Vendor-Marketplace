@@ -8,6 +8,8 @@ const {
   downloadInvoice,
   requestReturn,
   replyToReturn,
+  approveReturn,
+  rejectReturn,
 } = require('../controllers/OrderController');
 const verifyToken = require('../middleware/verifyToken');
 const isVendor = require('../middleware/isVendor');
@@ -23,5 +25,7 @@ router.put('/:id/status', isVendor, updateOrderStatus);
 router.get('/:id/invoice', downloadInvoice);
 router.post('/:id/return', requestReturn);
 router.post('/:id/vendor-reply', isVendor, replyToReturn);
+router.put('/:id/approve-return', isVendor, approveReturn);
+router.put('/:id/reject-return', isVendor, rejectReturn);
 
 module.exports = router;

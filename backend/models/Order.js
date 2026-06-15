@@ -61,6 +61,7 @@ const orderSchema = new mongoose.Schema(
     invoiceUrl: String,
     notes: String,
     returnReason: String,
+    returnType: { type: String, enum: ['refund', 'replacement'], default: 'refund' },
     vendorReply: String,
   },
   { timestamps: true }

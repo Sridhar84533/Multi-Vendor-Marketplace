@@ -1,25 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../redux/authSlice';
+import { fetchNotifications, addLiveNotification } from '../../redux/notificationSlice';
 import { ShoppingCart, Bell, LogOut } from 'lucide-react';
 import SearchBar from '../SearchBar/SearchBar';
 import Notifications from '../Notifications/Notifications';
+import { io } from 'socket.io-client';
 
 import logo from '../../assets/logo.png';
+
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { items } = useSelector((state) => state.cart);
+  const { unreadCount } = useSelector((state) => state.notification);
   const [showNotifications, setShowNotifications] = useState(false);
+  const socketRef = useRef(null);
 
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const isVendor = user?.role === 'vendor';
   const isAdmin = user?.role === 'admin';
 
+  /* ── Fetch initial notifications when authenticated ── */
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(fetchNotifications());
+    }
+  }, [isAuthenticated, dispatch]);
+
+  /* ── Socket.io: connect on login, disconnect on logout ── */
+  useEffect(() => {
+    if (!isAuthenticated || !user?._id) {
+      // Disconnect any existing socket
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      return;
+    }
+
+    const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      socket.emit('join', user._id);
+    });
+
+    socket.on('notification', (data) => {
+      dispatch(addLiveNotification({
+        _id: data._id || Date.now().toString(),
+        title: data.title,
+        message: data.message,
+        type: data.type || 'system',
+        link: data.link || '',
+        isRead: false,
+        createdAt: data.createdAt || new Date().toISOString(),
+      }));
+    });
+
+    return () => {
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [isAuthenticated, user?._id, dispatch]);
+
   const handleLogout = () => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
     dispatch(logout());
     navigate('/login');
   };
@@ -70,19 +123,45 @@ const Navbar = () => {
                 </Link>
               )}
 
+              {/* Notification Bell */}
               <div
                 className="nav-link"
                 style={{ position: 'relative' }}
                 onClick={() => setShowNotifications(!showNotifications)}
               >
                 <span className="nav-line-1">Alerts</span>
-                <span className="nav-line-2" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Bell size={16} /> Notifications
+                <span className="nav-line-2" style={{ display: 'flex', alignItems: 'center', gap: '4px', position: 'relative' }}>
+                  <span style={{ position: 'relative', display: 'inline-flex' }}>
+                    <Bell size={16} />
+                    {unreadCount > 0 && (
+                      <span style={{
+                        position: 'absolute',
+                        top: '-7px',
+                        right: '-9px',
+                        background: '#EF4444',
+                        color: '#fff',
+                        fontSize: '0.6rem',
+                        fontWeight: 800,
+                        minWidth: '16px',
+                        height: '16px',
+                        borderRadius: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '0 3px',
+                        lineHeight: 1,
+                        border: '1.5px solid #fff',
+                      }}>
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </span>
+                  &nbsp;Notifications
                 </span>
                 {showNotifications && <Notifications onClose={() => setShowNotifications(false)} />}
               </div>
 
-              {/* Cart before Sign Out — customers only */}
+              {/* Cart — customers only */}
               {!isVendor && !isAdmin && (
                 <Link to="/cart" className="nav-link cart-icon-container">
                   <ShoppingCart size={22} />

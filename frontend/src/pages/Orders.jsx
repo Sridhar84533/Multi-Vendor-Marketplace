@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import API, { downloadInvoice } from '../services/api';
 import Loader from '../components/Loader/Loader';
-import { FileText, RefreshCw, AlertCircle, Box } from 'lucide-react';
+import { FileText, RefreshCw, AlertCircle, Box, MessageSquare, CheckCircle, XCircle } from 'lucide-react';
 
 /* ── View toggle icons (inline SVG to avoid extra deps) ── */
 const IconList = ({ active }) => (
@@ -53,6 +53,7 @@ const Orders = () => {
   // Return request state
   const [returnOrderId, setReturnOrderId] = useState(null);
   const [returnReason, setReturnReason] = useState('');
+  const [returnType, setReturnType] = useState('refund'); // 'refund' | 'replacement'
 
   const fetchOrders = async () => {
     try {
@@ -88,11 +89,11 @@ const Orders = () => {
     if (!returnReason.trim()) return;
 
     try {
-      await API.post(`/orders/${returnOrderId}/return`, { reason: returnReason });
+      await API.post(`/orders/${returnOrderId}/return`, { reason: returnReason, returnType });
       setReturnOrderId(null);
       setReturnReason('');
+      setReturnType('refund');
       fetchOrders();
-      alert('Return request has been submitted successfully.');
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to submit return request.');
     }
@@ -216,52 +217,95 @@ const Orders = () => {
                 </div>
 
                 {/* Card Body */}
-                <div style={{ padding: '1.5rem' }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem', color: order.status === 'Delivered' ? 'var(--success)' : 'var(--text)' }}>
-                    Status: {order.status}
-                  </h3>
+                 <div style={{ padding: '1.5rem' }}>
+                   {/* Status badge */}
+                   <div style={{ marginBottom: '1rem' }}>
+                     <span style={{
+                       display: 'inline-flex', alignItems: 'center', gap: '6px',
+                       fontWeight: 700, fontSize: '0.9rem',
+                       padding: '4px 12px', borderRadius: '20px',
+                       backgroundColor:
+                         order.status === 'Delivered' ? '#DCFCE7' :
+                         order.status === 'Return Approved' ? '#D1FAE5' :
+                         order.status === 'Return Requested' ? '#FEF3C7' :
+                         order.status === 'Cancelled' ? '#FEE2E2' : '#EFF6FF',
+                       color:
+                         order.status === 'Delivered' ? '#166534' :
+                         order.status === 'Return Approved' ? '#065F46' :
+                         order.status === 'Return Requested' ? '#92400E' :
+                         order.status === 'Cancelled' ? '#991B1B' : '#1D4ED8',
+                     }}>
+                       {order.status === 'Delivered' && <CheckCircle size={14} />}
+                       {order.status === 'Return Approved' && <CheckCircle size={14} />}
+                       {order.status === 'Return Requested' && <RefreshCw size={14} />}
+                       {order.status === 'Cancelled' && <XCircle size={14} />}
+                       {order.status}
+                     </span>
+                   </div>
 
-                  {order.items.map((item, idx) => {
-                    const imgUrl = item.product?.images?.[0]?.url || item.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500';
-                    return (
-                      <div key={idx} style={{ display: 'flex', gap: '1.5rem', marginBottom: idx < order.items.length - 1 ? '1.5rem' : 0 }}>
-                        <img src={imgUrl} alt={item.title} style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
-                        <div style={{ flexGrow: 1 }}>
-                          <Link to={`/products/${item.product}`} style={{ fontWeight: 600, color: '#007185' }}>
-                            {item.title}
-                          </Link>
-                          <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                            Price: Rs. {item.price} | Qty: {item.quantity}
-                          </span>
-                          {order.status === 'Delivered' && (
-                            <Link to={`/products/${item.product}`} style={{ display: 'inline-block', marginTop: '8px' }}>
-                              <button className="btn btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}>
-                                Write a product review
-                              </button>
-                            </Link>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                   {/* Vendor reply (if any) */}
+                   {order.vendorReply && (
+                     <div style={{
+                       display: 'flex', gap: '10px', alignItems: 'flex-start',
+                       padding: '0.85rem 1rem',
+                       backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0',
+                       borderRadius: '8px', marginBottom: '1rem',
+                     }}>
+                       <MessageSquare size={16} color='#059669' style={{ flexShrink: 0, marginTop: '2px' }} />
+                       <div>
+                         <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#059669', display: 'block', marginBottom: '3px' }}>SELLER REPLY</span>
+                         <span style={{ fontSize: '0.875rem', color: '#374151' }}>{order.vendorReply}</span>
+                       </div>
+                     </div>
+                   )}
 
-                  <hr style={{ margin: '1.5rem 0', borderColor: '#EEE' }} />
+                   {/* Return type badge */}
+                   {order.returnReason && (
+                     <div style={{ fontSize: '0.82rem', color: '#92400E', background: '#FEF3C7', borderRadius: '6px', padding: '6px 10px', marginBottom: '1rem', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                       <RefreshCw size={13} />
+                       <strong>{order.returnType === 'replacement' ? 'Replacement' : 'Refund'} Request:</strong>&nbsp;{order.returnReason}
+                     </div>
+                   )}
 
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <button className="btn btn-secondary" style={{ padding: '0.5rem 1.2rem' }} onClick={() => navigate(`/tracking/${order._id}`)}>
-                      Track Package
-                    </button>
-                    {order.status === 'Delivered' && (
-                      <button
-                        className="btn btn-outline"
-                        style={{ padding: '0.5rem 1.2rem', color: 'var(--danger)' }}
-                        onClick={() => setReturnOrderId(order._id)}
-                      >
-                        <RefreshCw size={16} /> Return Items
-                      </button>
-                    )}
-                  </div>
-                </div>
+                   {order.items.map((item, idx) => {
+                     const imgUrl = item.product?.images?.[0]?.url || item.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500';
+                     return (
+                       <div key={idx} style={{ display: 'flex', gap: '1.5rem', marginBottom: idx < order.items.length - 1 ? '1.5rem' : 0 }}>
+                         <img src={imgUrl} alt={item.title} style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
+                         <div style={{ flexGrow: 1 }}>
+                           <Link to={`/products/${item.product}`} style={{ fontWeight: 600, color: '#007185' }}>
+                             {item.title}
+                           </Link>
+                           <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                             Price: Rs. {item.price} | Qty: {item.quantity}
+                           </span>
+                           {order.status === 'Delivered' && (
+                             <Link to={`/products/${item.product}`} style={{ display: 'inline-block', marginTop: '8px' }}>
+                               <button className="btn btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}>
+                                 Write a product review
+                               </button>
+                             </Link>
+                           )}
+                         </div>
+                       </div>
+                     );
+                   })}
+
+                   <hr style={{ margin: '1.5rem 0', borderColor: '#EEE' }} />
+
+                   <div style={{ display: 'flex', gap: '12px' }}>
+                     <button className="btn btn-secondary" style={{ padding: '0.5rem 1.2rem' }} onClick={() => navigate(`/tracking/${order._id}`)}>Track Package</button>
+                     {order.status === 'Delivered' && (
+                       <button
+                         className="btn btn-outline"
+                         style={{ padding: '0.5rem 1.2rem', color: 'var(--danger)' }}
+                         onClick={() => setReturnOrderId(order._id)}
+                       >
+                         <RefreshCw size={16} /> Return / Replace
+                       </button>
+                     )}
+                   </div>
+                 </div>
               </div>
             ))}
           </div>
@@ -423,33 +467,61 @@ const Orders = () => {
         )
       )}
 
-      {/* Return Request Modal */}
+      {/* Return / Replacement Modal */}
       {returnOrderId && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 2000, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <form onSubmit={handleReturnRequest} style={{ backgroundColor: '#FFF', width: '90%', maxWidth: '450px', borderRadius: '8px', padding: '2rem' }}>
-            <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <AlertCircle color="var(--danger)" /> Return Request
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.55)', zIndex: 2000, display: 'flex', justifyContent: 'center', alignItems: 'center', backdropFilter: 'blur(2px)' }}>
+          <form onSubmit={handleReturnRequest} style={{ backgroundColor: '#FFF', width: '90%', maxWidth: '480px', borderRadius: '12px', padding: '2rem', boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }}>
+            <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <AlertCircle size={22} color="var(--danger)" /> Return / Replacement Request
             </h2>
-            <p style={{ fontSize: '0.9rem', color: '#555', marginBottom: '1.2rem' }}>
-              Please provide the reason why you wish to return these items.
+            <p style={{ fontSize: '0.88rem', color: '#6B7280', marginBottom: '1.5rem' }}>
+              Choose what you'd like and explain why.
             </p>
+
+            {/* Return Type Toggle */}
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '1.2rem' }}>
+              {[{ value: 'refund', label: '💰 Refund', desc: 'Get your money back' }, { value: 'replacement', label: '🔄 Replacement', desc: 'Get a new product' }].map(opt => (
+                <label
+                  key={opt.value}
+                  style={{
+                    flex: 1, display: 'flex', flexDirection: 'column', gap: '3px',
+                    padding: '0.75rem 1rem', borderRadius: '8px', cursor: 'pointer',
+                    border: returnType === opt.value ? '2px solid var(--primary)' : '2px solid #E5E7EB',
+                    backgroundColor: returnType === opt.value ? '#F5F3FF' : '#FAFAFA',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="returnType"
+                    value={opt.value}
+                    checked={returnType === opt.value}
+                    onChange={() => setReturnType(opt.value)}
+                    style={{ display: 'none' }}
+                  />
+                  <span style={{ fontWeight: 700, fontSize: '0.9rem', color: returnType === opt.value ? 'var(--primary)' : '#374151' }}>{opt.label}</span>
+                  <span style={{ fontSize: '0.75rem', color: '#6B7280' }}>{opt.desc}</span>
+                </label>
+              ))}
+            </div>
+
             <div className="form-group">
-              <label className="form-label">Reason for Return</label>
+              <label className="form-label">Reason</label>
               <textarea
                 required
                 rows={4}
                 value={returnReason}
                 onChange={(e) => setReturnReason(e.target.value)}
                 className="form-control"
-                placeholder="e.g. Defective, Wrong Size, Not as pictured"
+                placeholder="e.g. Defective, Wrong Size, Not as pictured…"
               ></textarea>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '1.5rem' }}>
-              <button type="button" className="btn btn-outline" onClick={() => setReturnOrderId(null)}>
+              <button type="button" className="btn btn-outline" onClick={() => { setReturnOrderId(null); setReturnReason(''); setReturnType('refund'); }}>
                 Cancel
               </button>
               <button type="submit" className="btn btn-primary" style={{ backgroundColor: 'var(--danger)', color: '#FFF' }}>
-                Submit Return Request
+                Submit Request
               </button>
             </div>
           </form>

@@ -43,6 +43,7 @@ app.use('/api/coupons', require('./routes/couponRoutes'));
 app.use('/api/vendor', require('./routes/vendorRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/chats', require('./routes/chatRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 
 // Basic testing endpoint
 app.get('/', (req, res) => {

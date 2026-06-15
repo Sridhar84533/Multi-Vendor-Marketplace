@@ -8,15 +8,12 @@ import Notifications from '../Notifications/Notifications';
 
 import logo from '../../assets/logo.png';
 
-import LogoInfoModal from '../LogoInfoModal/LogoInfoModal';
-
 const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { items } = useSelector((state) => state.cart);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showLogoModal, setShowLogoModal] = useState(false);
 
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const isVendor = user?.role === 'vendor';
@@ -30,7 +27,7 @@ const Navbar = () => {
   return (
     <>
       <nav className={`navbar ${isVendor ? 'navbar-vendor' : ''}`}>
-        <Link to="#" onClick={(e) => { e.preventDefault(); setShowLogoModal(true); }} className="navbar-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.35rem', whiteSpace: 'nowrap' }}>
+        <Link to="/" className="navbar-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.35rem', whiteSpace: 'nowrap' }}>
           <img src={logo} alt="Logo" style={{ width: '30px', height: '30px', objectFit: 'contain' }} />
           Multi-Vendor Marketplace
         </Link>
@@ -104,9 +101,6 @@ const Navbar = () => {
           )}
         </div>
       </nav>
-      {showLogoModal && (
-        <LogoInfoModal isOpen={showLogoModal} onClose={() => setShowLogoModal(false)} user={user} />
-      )}
     </>
   );
 };

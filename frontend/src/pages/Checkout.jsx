@@ -211,9 +211,7 @@ const Checkout = () => {
   const [discount, setDiscount] = useState(0);
   const [couponMsg, setCouponMsg] = useState('');
 
-  // Loyalty points & Wallet
   const [useLoyalty, setUseLoyalty] = useState(false);
-  const [useWallet, setUseWallet] = useState(false);
 
   useEffect(() => {
     const fetchUserAddresses = async () => {
@@ -240,7 +238,7 @@ const Checkout = () => {
 
   const baseTotal = subtotal + shippingFee + tax - discount;
   const loyaltyPointsUsed = useLoyalty ? Math.min(loyaltyPointsAvailable, baseTotal) : 0;
-  const walletAmountUsed = useWallet ? Math.min(walletBalanceAvailable, baseTotal - loyaltyPointsUsed) : 0;
+  const walletAmountUsed = Math.min(walletBalanceAvailable, baseTotal - loyaltyPointsUsed);
   const total = baseTotal - loyaltyPointsUsed - walletAmountUsed;
 
   const handleApplyCoupon = async () => {
@@ -535,14 +533,11 @@ const Checkout = () => {
             )}
 
             {/* Wallet Section */}
-            {walletBalanceAvailable > 0 && (
+            {walletAmountUsed > 0 && (
               <div style={{ margin: '0 0 1rem', backgroundColor: '#F0FDF4', border: '1px solid #86EFAC', padding: '0.8rem', borderRadius: '4px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.85rem' }}>
-                  <input type="checkbox" checked={useWallet} onChange={(e) => setUseWallet(e.target.checked)} />
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    Use Wallet Balance (Available: Rs. {walletBalanceAvailable.toFixed(2)})
-                  </span>
-                </label>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: '#166534', fontWeight: 600 }}>
+                  Rs. {walletAmountUsed.toFixed(2)} automatically deducted from Wallet (Balance: Rs. {walletBalanceAvailable.toFixed(2)})
+                </span>
               </div>
             )}
 

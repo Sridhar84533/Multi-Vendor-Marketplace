@@ -321,25 +321,28 @@ const ProductDetails = () => {
         <div>
           <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '1rem' }}>Customer reviews</h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
-            <StarRating rating={product.rating} size={20} />
+            <StarRating 
+              rating={product.rating} 
+              size={20} 
+              onChange={(val) => {
+                setReviewRating(val);
+                document.getElementById('review-form-section')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            />
             <strong style={{ fontSize: '1.2rem' }}>{product.rating} out of 5</strong>
           </div>
           <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{product.numReviews} global ratings</span>
 
           {/* Review form */}
           {isAuthenticated && (
-            <form onSubmit={handleReviewSubmit} style={{ marginTop: '2rem', borderTop: '1px solid #DDD', paddingTop: '1.5rem' }}>
+            <form id="review-form-section" onSubmit={handleReviewSubmit} style={{ marginTop: '2rem', borderTop: '1px solid #DDD', paddingTop: '1.5rem' }}>
               <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem' }}>Review this product</h3>
               {reviewError && <div style={{ color: 'var(--danger)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{reviewError}</div>}
               <div className="form-group">
-                <label className="form-label">Rating</label>
-                <select value={reviewRating} onChange={(e) => setReviewRating(Number(e.target.value))} className="form-control" style={{ backgroundColor: '#FFF' }}>
-                  <option value={5}>5 - Excellent</option>
-                  <option value={4}>4 - Very Good</option>
-                  <option value={3}>3 - Good</option>
-                  <option value={2}>2 - Fair</option>
-                  <option value={1}>1 - Poor</option>
-                </select>
+                <label className="form-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Rating</label>
+                <div style={{ marginBottom: '1rem' }}>
+                  <StarRating rating={reviewRating} size={28} onChange={setReviewRating} />
+                </div>
               </div>
               <div className="form-group">
                 <label className="form-label">Review Headline</label>

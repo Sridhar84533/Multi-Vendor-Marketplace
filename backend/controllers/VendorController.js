@@ -72,7 +72,7 @@ exports.getVendorDashboard = async (req, res) => {
     });
 
     const returnOrders = orders.filter(o => o.status === 'Return Requested');
-    const normalOrders = orders.filter(o => o.status !== 'Return Requested').slice(0, 5);
+    const normalOrders = orders.filter(o => o.status !== 'Return Requested');
 
     res.json({
       profile: vendor,

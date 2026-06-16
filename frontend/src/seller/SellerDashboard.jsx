@@ -454,7 +454,7 @@ const SellerDashboard = () => {
         >
           <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid #F3F4F6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
             <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1E293B', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-              <Package size={18} color="#6366F1" /> Recent Orders
+              <Package size={18} color="#6366F1" /> All Orders
             </h2>
             
             {/* View Toggle Buttons */}

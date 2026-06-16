@@ -36,6 +36,7 @@ const orderSchema = new mongoose.Schema(
     tax: { type: Number, default: 0 },
     discount: { type: Number, default: 0 },
     loyaltyPointsUsed: { type: Number, default: 0 },
+    walletAmountUsed: { type: Number, default: 0 },
     total: { type: Number, required: true },
     couponCode: String,
     paymentMethod: {

@@ -38,6 +38,7 @@ exports.createOrder = async (req, res) => {
       tax,
       discount,
       loyaltyPointsUsed,
+      walletAmountUsed,
       total,
       couponCode,
       paymentMethod,
@@ -59,7 +60,7 @@ exports.createOrder = async (req, res) => {
     const FREE_DELIVERY_THRESHOLD = 1000;
     const DELIVERY_CHARGE = 49;
     const calculatedShippingFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_CHARGE;
-    const calculatedTotal = subtotal + calculatedShippingFee - (discount || 0) - (loyaltyPointsUsed || 0);
+    const calculatedTotal = subtotal + calculatedShippingFee - (discount || 0) - (loyaltyPointsUsed || 0) - (walletAmountUsed || 0);
 
     const estimatedDelivery = new Date();
     estimatedDelivery.setDate(estimatedDelivery.getDate() + 5);
@@ -73,9 +74,11 @@ exports.createOrder = async (req, res) => {
       tax: 0,
       discount,
       loyaltyPointsUsed,
+      walletAmountUsed,
       total: calculatedTotal,
       couponCode,
       paymentMethod,
+      paymentStatus: calculatedTotal === 0 ? 'Paid' : 'Pending',
       estimatedDelivery,
       trackingHistory: [{ status: 'Order Placed', message: `Your order has been placed successfully on ${new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}.`, timestamp: new Date() }],
     });
@@ -90,6 +93,10 @@ exports.createOrder = async (req, res) => {
         description: `Redeemed points on order #${order._id}`,
         order: order._id,
       });
+    }
+
+    if (walletAmountUsed > 0) {
+      await User.findByIdAndUpdate(req.user._id, { $inc: { walletBalance: -walletAmountUsed } });
     }
 
     // Earn loyalty points (1 point per Rs. 100 spent)

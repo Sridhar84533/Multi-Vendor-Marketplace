@@ -211,8 +211,9 @@ const Checkout = () => {
   const [discount, setDiscount] = useState(0);
   const [couponMsg, setCouponMsg] = useState('');
 
-  // Loyalty points
+  // Loyalty points & Wallet
   const [useLoyalty, setUseLoyalty] = useState(false);
+  const [useWallet, setUseWallet] = useState(false);
 
   useEffect(() => {
     const fetchUserAddresses = async () => {
@@ -235,8 +236,12 @@ const Checkout = () => {
   const shippingFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_CHARGE;
   const tax = 0;
   const loyaltyPointsAvailable = user?.loyaltyPoints || 0;
-  const loyaltyPointsUsed = useLoyalty ? Math.min(loyaltyPointsAvailable, subtotal) : 0;
-  const total = subtotal + shippingFee + tax - discount - loyaltyPointsUsed;
+  const walletBalanceAvailable = user?.walletBalance || 0;
+
+  const baseTotal = subtotal + shippingFee + tax - discount;
+  const loyaltyPointsUsed = useLoyalty ? Math.min(loyaltyPointsAvailable, baseTotal) : 0;
+  const walletAmountUsed = useWallet ? Math.min(walletBalanceAvailable, baseTotal - loyaltyPointsUsed) : 0;
+  const total = baseTotal - loyaltyPointsUsed - walletAmountUsed;
 
   const handleApplyCoupon = async () => {
     setCouponMsg('');
@@ -270,10 +275,11 @@ const Checkout = () => {
     tax,
     discount,
     loyaltyPointsUsed,
+    walletAmountUsed,
     total,
     couponCode,
     paymentMethod,
-  }), [items, user, selectedAddress, subtotal, shippingFee, tax, discount, loyaltyPointsUsed, total, couponCode, paymentMethod]);
+  }), [items, user, selectedAddress, subtotal, shippingFee, tax, discount, loyaltyPointsUsed, walletAmountUsed, total, couponCode, paymentMethod]);
 
   /* Called after successful mock payment */
   const handleMockPaymentSuccess = async () => {
@@ -314,7 +320,7 @@ const Checkout = () => {
     try {
       const orderData = buildOrderData();
 
-      if (paymentMethod === 'razorpay') {
+      if (paymentMethod === 'razorpay' && total > 0) {
         // Create Razorpay order on backend
         const orderRes = await createRazorpayOrder(total);
         // Store in refs (synchronous, no stale-closure issue)
@@ -504,6 +510,11 @@ const Checkout = () => {
                   <span>Loyalty Points:</span><span>- Rs. {loyaltyPointsUsed.toFixed(2)}</span>
                 </div>
               )}
+              {walletAmountUsed > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--success)', fontWeight: 600 }}>
+                  <span>Wallet Balance:</span><span>- Rs. {walletAmountUsed.toFixed(2)}</span>
+                </div>
+              )}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 700, margin: '1rem 0' }}>
@@ -511,7 +522,6 @@ const Checkout = () => {
               <span style={{ color: '#B12704' }}>Rs. {total.toFixed(2)}</span>
             </div>
 
-            {/* Loyalty Section */}
             {loyaltyPointsAvailable > 0 && (
               <div style={{ margin: '0 0 1rem', backgroundColor: '#F4FBF9', border: '1px solid #A3E2D5', padding: '0.8rem', borderRadius: '4px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.85rem' }}>
@@ -519,6 +529,18 @@ const Checkout = () => {
                   <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Award size={16} color="var(--success)" />
                     Use {loyaltyPointsAvailable} Loyalty Points (Rs. {loyaltyPointsAvailable} saved)
+                  </span>
+                </label>
+              </div>
+            )}
+
+            {/* Wallet Section */}
+            {walletBalanceAvailable > 0 && (
+              <div style={{ margin: '0 0 1rem', backgroundColor: '#F0FDF4', border: '1px solid #86EFAC', padding: '0.8rem', borderRadius: '4px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.85rem' }}>
+                  <input type="checkbox" checked={useWallet} onChange={(e) => setUseWallet(e.target.checked)} />
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    Use Wallet Balance (Available: Rs. {walletBalanceAvailable.toFixed(2)})
                   </span>
                 </label>
               </div>

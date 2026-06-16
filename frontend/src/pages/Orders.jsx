@@ -273,14 +273,14 @@ const Orders = () => {
                        <div key={idx} style={{ display: 'flex', gap: '1.5rem', marginBottom: idx < order.items.length - 1 ? '1.5rem' : 0 }}>
                          <img src={imgUrl} alt={item.title} style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
                          <div style={{ flexGrow: 1 }}>
-                           <Link to={`/products/${item.product}`} style={{ fontWeight: 600, color: '#007185' }}>
+                           <Link to={`/products/${item.product?._id || item.product}`} style={{ fontWeight: 600, color: '#007185' }}>
                              {item.title}
                            </Link>
                            <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
                              Price: Rs. {item.price} | Qty: {item.quantity}
                            </span>
                            {order.status === 'Delivered' && (
-                             <Link to={`/products/${item.product}`} style={{ display: 'inline-block', marginTop: '8px' }}>
+                             <Link to={`/products/${item.product?._id || item.product}`} style={{ display: 'inline-block', marginTop: '8px' }}>
                                <button className="btn btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}>
                                  Write a product review
                                </button>

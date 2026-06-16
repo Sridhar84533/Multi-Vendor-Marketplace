@@ -592,6 +592,8 @@ const SellerDashboard = () => {
                               <option value="Shipped">Shipped</option>
                               <option value="Out For Delivery">Out For Delivery</option>
                               <option value="Delivered">Delivered</option>
+                              <option value="Refunded">Refunded</option>
+                              <option value="Cancelled">Cancelled</option>
                             </select>
                           )}
                         </td>

@@ -3,7 +3,7 @@ import AdminLayout from './AdminLayout';
 import API from '../services/api';
 import { Search, RefreshCw, Package } from 'lucide-react';
 
-const STATUS_OPTIONS = ['Order Placed', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered', 'Cancelled'];
+const STATUS_OPTIONS = ['Order Placed', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered', 'Refunded', 'Cancelled'];
 
 const statusColor = (status) => {
   const map = {
@@ -12,6 +12,7 @@ const statusColor = (status) => {
     Shipped: '#8b5cf6',
     'Out For Delivery': '#06b6d4',
     Delivered: '#10b981',
+    Refunded: '#f97316',
     Cancelled: '#ef4444',
   };
   return map[status] || '#94a3b8';

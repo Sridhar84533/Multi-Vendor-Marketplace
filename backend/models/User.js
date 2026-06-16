@@ -30,6 +30,7 @@ const userSchema = new mongoose.Schema(
     savedCards: [savedCardSchema],
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
     loyaltyPoints: { type: Number, default: 0 },
+    walletBalance: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true },
     isEmailVerified: { type: Boolean, default: false },
     resetPasswordToken: String,

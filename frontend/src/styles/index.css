@@ -95,7 +95,7 @@ img {
   z-index: 1000;
   /* never wrap — single row on all screen sizes */
   flex-wrap: nowrap;
-  overflow: hidden;
+  overflow: visible;
   width: 100%;
   box-sizing: border-box;
 }

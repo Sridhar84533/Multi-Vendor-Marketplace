@@ -60,6 +60,9 @@ exports.getVendorDashboard = async (req, res) => {
     let vendorRevenue = 0;
     let itemsSold = 0;
     orders.forEach((order) => {
+      if (order.status === 'Cancelled' || order.status === 'Refunded' || order.paymentStatus === 'Refunded') {
+        return; // Exclude these from revenue and sales
+      }
       order.items.forEach((item) => {
         if (item.vendor.toString() === vendor._id.toString()) {
           vendorRevenue += item.price * item.quantity;

@@ -124,41 +124,46 @@ const Navbar = () => {
               )}
 
               {/* Notification Bell */}
-              <div
-                className="nav-link"
-                style={{ position: 'relative' }}
-                onClick={() => setShowNotifications(!showNotifications)}
-              >
-                <span className="nav-line-1">Alerts</span>
-                <span className="nav-line-2" style={{ display: 'flex', alignItems: 'center', gap: '4px', position: 'relative' }}>
-                  <span style={{ position: 'relative', display: 'inline-flex' }}>
-                    <Bell size={16} />
-                    {unreadCount > 0 && (
-                      <span style={{
-                        position: 'absolute',
-                        top: '-7px',
-                        right: '-9px',
-                        background: '#EF4444',
-                        color: '#fff',
-                        fontSize: '0.6rem',
-                        fontWeight: 800,
-                        minWidth: '16px',
-                        height: '16px',
-                        borderRadius: '10px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '0 3px',
-                        lineHeight: 1,
-                        border: '1.5px solid #fff',
-                      }}>
-                        {unreadCount > 99 ? '99+' : unreadCount}
-                      </span>
-                    )}
+              <div style={{ position: 'relative' }}>
+                <div
+                  className="nav-link bell-toggle-btn"
+                  onClick={() => setShowNotifications(!showNotifications)}
+                >
+                  <span className="nav-line-1">Alerts</span>
+                  <span className="nav-line-2" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ position: 'relative', display: 'inline-flex' }}>
+                      <Bell size={16} />
+                      {unreadCount > 0 && (
+                        <span style={{
+                          position: 'absolute',
+                          top: '-7px',
+                          right: '-9px',
+                          background: '#EF4444',
+                          color: '#fff',
+                          fontSize: '0.6rem',
+                          fontWeight: 800,
+                          minWidth: '16px',
+                          height: '16px',
+                          borderRadius: '10px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '0 3px',
+                          lineHeight: 1,
+                          border: '1.5px solid #131921',
+                        }}>
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
+                    </span>
+                    &nbsp;Notifications
                   </span>
-                  &nbsp;Notifications
-                </span>
-                {showNotifications && <Notifications onClose={() => setShowNotifications(false)} />}
+                </div>
+                {showNotifications && (
+                  <Notifications
+                    onClose={() => setShowNotifications(false)}
+                  />
+                )}
               </div>
 
               {/* Cart — customers only */}

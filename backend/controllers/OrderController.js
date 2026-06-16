@@ -210,6 +210,14 @@ exports.updateOrderStatus = async (req, res) => {
       order.trackingHistory[order.trackingHistory.length - 1].message =
         message || `Your order was delivered on ${deliveredAt.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}.`;
       order.trackingHistory[order.trackingHistory.length - 1].timestamp = deliveredAt;
+    } else if (status === 'Refunded') {
+      order.paymentStatus = 'Refunded';
+      // Add amount to customer's wallet
+      await User.findByIdAndUpdate(order.user, {
+        $inc: { walletBalance: order.total }
+      });
+      order.trackingHistory[order.trackingHistory.length - 1].message =
+        message || `Your order has been refunded. Rs. ${order.total.toFixed(2)} has been added to your wallet.`;
     }
 
     await order.save();
@@ -333,14 +341,20 @@ exports.approveReturn = async (req, res) => {
     if (!order) return res.status(404).json({ message: 'Order not found' });
 
     const isRefund = order.returnType === 'refund';
-    const newStatus = 'Return Approved';
+    const newStatus = isRefund ? 'Refunded' : 'Return Approved';
 
     order.status = newStatus;
-    if (isRefund) order.paymentStatus = 'Refunded';
+    if (isRefund) {
+      order.paymentStatus = 'Refunded';
+      // Add amount to customer's wallet
+      await User.findByIdAndUpdate(order.user._id, {
+        $inc: { walletBalance: order.total }
+      });
+    }
     order.trackingHistory.push({
       status: newStatus,
       message: isRefund
-        ? `Your return has been approved. A refund of Rs. ${order.total.toFixed(2)} will be processed within 5-7 business days.`
+        ? `Your return has been approved. A refund of Rs. ${order.total.toFixed(2)} has been added to your wallet.`
         : `Your replacement request has been approved. A replacement product will be shipped soon.`,
     });
 

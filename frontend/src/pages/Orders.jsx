@@ -361,16 +361,20 @@ const Orders = () => {
                     {/* Product list */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '150px', overflowY: 'auto' }}>
                       {order.items.map((item, idx) => (
-                        <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <Link
+                          key={idx}
+                          to={`/products/${item.product?._id || item.product}`}
+                          style={{ display: 'flex', gap: '8px', alignItems: 'center', textDecoration: 'none' }}
+                        >
                           <img src={item.product?.images?.[0]?.url || item.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500'}
                             alt={item.title} style={{ width: '38px', height: '38px', objectFit: 'contain', border: '1px solid #EEE', borderRadius: '4px' }} />
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 600, color: '#007185', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {item.title}
                             </p>
                             <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Qty: {item.quantity} · Rs. {item.price}</span>
                           </div>
-                        </div>
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -425,9 +429,17 @@ const Orders = () => {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block' }}>Items</span>
-                    <strong style={{ fontSize: '0.83rem', color: '#007185', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
-                      {order.items.map(item => item.title).join(', ')}
-                    </strong>
+                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                      {order.items.map((item, idx) => (
+                        <Link
+                          key={idx}
+                          to={`/products/${item.product?._id || item.product}`}
+                          style={{ fontSize: '0.83rem', fontWeight: 600, color: '#007185', whiteSpace: 'nowrap' }}
+                        >
+                          {item.title}{idx < order.items.length - 1 ? ',' : ''}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                   <div style={{ width: '110px', flexShrink: 0 }}>
                     <span style={{

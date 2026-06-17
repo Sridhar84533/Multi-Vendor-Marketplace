@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '../redux/cartSlice';
 import { toggleWishlist } from '../redux/wishlistSlice';
@@ -135,7 +135,16 @@ const ProductDetails = () => {
 
         {/* Middle Core info details panel */}
         <div>
-          <span style={{ fontSize: '0.85rem', color: '#007185', fontWeight: 600 }}>Brand: {product.brand || 'Generic'}</span>
+          <span style={{ fontSize: '0.85rem', color: '#007185', fontWeight: 600 }}>
+            Brand:{' '}
+            {product.brand ? (
+              <Link to={`/products?brand=${encodeURIComponent(product.brand)}`} style={{ color: '#007185', textDecoration: 'none' }} onMouseEnter={(e) => e.target.style.textDecoration = 'underline'} onMouseLeave={(e) => e.target.style.textDecoration = 'none'}>
+                {product.brand}
+              </Link>
+            ) : (
+              'Generic'
+            )}
+          </span>
           <h1 style={{ fontSize: '1.6rem', fontWeight: 600, marginTop: '0.2rem', lineHeight: '1.3' }}>{product.title}</h1>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '0.5rem' }}>

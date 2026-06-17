@@ -39,7 +39,7 @@ exports.getProducts = async (req, res) => {
       query.category = category;
     }
     if (brand) {
-      query.brand = brand;
+      query.brand = { $in: brand.split(',').map((b) => b.trim()) };
     }
     if (minPrice || maxPrice) {
       query.price = {};

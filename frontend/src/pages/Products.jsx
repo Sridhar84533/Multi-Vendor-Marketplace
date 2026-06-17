@@ -18,7 +18,9 @@ const Products = () => {
 
   // Filter States
   const [category, setCategory] = useState(searchParams.get('category') || '');
-  const [selectedBrand, setSelectedBrand] = useState([]);
+  const [selectedBrand, setSelectedBrand] = useState(
+    searchParams.get('brand') ? searchParams.get('brand').split(',').map((b) => b.trim()) : []
+  );
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [rating, setRating] = useState('');
@@ -58,11 +60,16 @@ const Products = () => {
     fetchProducts();
   }, [searchParams, category, selectedBrand, minPrice, maxPrice, rating, sort, page]);
 
-  // Sync category state with query params
+  // Sync category and brand state with query params
   useEffect(() => {
     const categoryParam = searchParams.get('category');
-    if (categoryParam) {
-      setCategory(categoryParam);
+    setCategory(categoryParam || '');
+
+    const brandParam = searchParams.get('brand');
+    if (brandParam) {
+      setSelectedBrand(brandParam.split(',').map((b) => b.trim()));
+    } else {
+      setSelectedBrand([]);
     }
   }, [searchParams]);
 

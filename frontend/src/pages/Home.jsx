@@ -217,56 +217,73 @@ const Home = () => {
         </section>
       )}
 
-      {/* 2 ── Deal Banners (2-col Amazon-style promo blocks) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-        {[
-          {
-            bg: 'linear-gradient(135deg, #0a3d62 0%, #1a5276 100%)',
-            tag: '⚡ LIMITED TIME DEAL',
-            title: 'Up to 70% OFF on Electronics',
-            sub: 'Headphones, Laptops, Cameras & more',
-            cta: 'Shop Electronics',
-            img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=300&auto=format&fit=crop&q=60',
-            cat: 'Electronics',
-            tagColor: '#FF9900',
-          },
-          {
-            bg: 'linear-gradient(135deg, #5b0d91 0%, #7d3cad 100%)',
-            tag: '🔥 BESTSELLER',
-            title: 'Fashion Flash Sale',
-            sub: 'Clothing, Shoes, Accessories & more',
-            cta: 'Shop Fashion',
-            img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=300&auto=format&fit=crop&q=60',
-            cat: 'Fashion',
-            tagColor: '#F472B6',
-          },
-          {
-            bg: 'linear-gradient(135deg, #014d2f 0%, #1e8449 100%)',
-            tag: '🎁 SPECIAL OFFER',
-            title: 'Home & Living Deals',
-            sub: 'Furniture, Decor, Appliances & more',
-            cta: 'Shop Home',
-            img: 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=300&auto=format&fit=crop&q=60',
-            cat: 'Home Appliances',
-            tagColor: '#34D399',
-          },
-        ].map((ad, i) => (
-          <Link key={i} to={`/products?category=${ad.cat}`} style={{ textDecoration: 'none', borderRadius: '8px', overflow: 'hidden', background: ad.bg, display: 'flex', alignItems: 'stretch', minHeight: '160px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)', transition: 'transform 0.18s, box-shadow 0.18s' }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)'; }}
-          >
-            <div style={{ flex: 1, padding: '1.2rem 1rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: ad.tagColor, letterSpacing: '0.05em', marginBottom: '6px', display: 'block' }}>{ad.tag}</span>
-              <h3 style={{ color: '#FFF', fontSize: 'clamp(0.95rem, 2.5vw, 1.2rem)', fontWeight: 800, margin: '0 0 6px', lineHeight: 1.2 }}>{ad.title}</h3>
-              <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.78rem', margin: '0 0 12px' }}>{ad.sub}</p>
-              <span style={{ display: 'inline-block', backgroundColor: '#FF9900', color: '#111', fontSize: '0.78rem', fontWeight: 700, padding: '5px 14px', borderRadius: '3px' }}>{ad.cta}</span>
-            </div>
-            <div style={{ width: '130px', flexShrink: 0, overflow: 'hidden' }}>
-              <img src={ad.img} alt={ad.cat} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }} />
-            </div>
-          </Link>
-        ))}
+      {/* 2 ── Auto-Scrolling Deal Banners (infinite non-stop carousel) */}
+      <style>{`
+        @keyframes adScroll {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .ad-scroll-track {
+          display: flex;
+          gap: 1rem;
+          animation: adScroll 22s linear infinite;
+          width: max-content;
+        }
+        .ad-scroll-track:hover {
+          animation-play-state: paused;
+        }
+        .ad-card {
+          flex-shrink: 0;
+          width: 340px;
+          min-height: 160px;
+          border-radius: 8px;
+          overflow: hidden;
+          display: flex;
+          align-items: stretch;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+          text-decoration: none;
+          transition: transform 0.18s, box-shadow 0.18s;
+        }
+        .ad-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+          animation-play-state: paused;
+        }
+      `}</style>
+
+      <div style={{ overflow: 'hidden', marginBottom: '1.5rem' }}>
+        <div className="ad-scroll-track">
+          {[
+            { bg: 'linear-gradient(135deg, #0a3d62 0%, #1a5276 100%)', tag: '⚡ LIMITED TIME DEAL', title: 'Up to 70% OFF on Electronics', sub: 'Headphones, Laptops, Cameras & more', cta: 'Shop Electronics', img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=300&auto=format&fit=crop&q=60', cat: 'Electronics', tagColor: '#FF9900' },
+            { bg: 'linear-gradient(135deg, #5b0d91 0%, #7d3cad 100%)', tag: '🔥 BESTSELLER', title: 'Fashion Flash Sale', sub: 'Clothing, Shoes, Accessories & more', cta: 'Shop Fashion', img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=300&auto=format&fit=crop&q=60', cat: 'Fashion', tagColor: '#F472B6' },
+            { bg: 'linear-gradient(135deg, #014d2f 0%, #1e8449 100%)', tag: '🎁 SPECIAL OFFER', title: 'Home & Living Deals', sub: 'Furniture, Decor, Appliances & more', cta: 'Shop Home', img: 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=300&auto=format&fit=crop&q=60', cat: 'Home Appliances', tagColor: '#34D399' },
+            { bg: 'linear-gradient(135deg, #7b1e00 0%, #c0392b 100%)', tag: '📱 NEW ARRIVALS', title: 'Latest Mobiles & Gadgets', sub: 'Smartphones, Tablets, Wearables', cta: 'Shop Mobiles', img: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&auto=format&fit=crop&q=60', cat: 'Mobiles', tagColor: '#FCA5A5' },
+            { bg: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', tag: '💄 BEAUTY PICKS', title: 'Skincare & Beauty Deals', sub: 'Serums, Moisturizers, Makeup & more', cta: 'Shop Beauty', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300&auto=format&fit=crop&q=60', cat: 'Beauty', tagColor: '#F9A8D4' },
+            { bg: 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)', tag: '🏋️ SPORTS ZONE', title: 'Sports & Fitness Gear', sub: 'Equipment, Apparel, Supplements', cta: 'Shop Sports', img: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=300&auto=format&fit=crop&q=60', cat: 'Sports', tagColor: '#6EE7B7' },
+            // Duplicates for seamless infinite loop
+            { bg: 'linear-gradient(135deg, #0a3d62 0%, #1a5276 100%)', tag: '⚡ LIMITED TIME DEAL', title: 'Up to 70% OFF on Electronics', sub: 'Headphones, Laptops, Cameras & more', cta: 'Shop Electronics', img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=300&auto=format&fit=crop&q=60', cat: 'Electronics', tagColor: '#FF9900' },
+            { bg: 'linear-gradient(135deg, #5b0d91 0%, #7d3cad 100%)', tag: '🔥 BESTSELLER', title: 'Fashion Flash Sale', sub: 'Clothing, Shoes, Accessories & more', cta: 'Shop Fashion', img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=300&auto=format&fit=crop&q=60', cat: 'Fashion', tagColor: '#F472B6' },
+            { bg: 'linear-gradient(135deg, #014d2f 0%, #1e8449 100%)', tag: '🎁 SPECIAL OFFER', title: 'Home & Living Deals', sub: 'Furniture, Decor, Appliances & more', cta: 'Shop Home', img: 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=300&auto=format&fit=crop&q=60', cat: 'Home Appliances', tagColor: '#34D399' },
+            { bg: 'linear-gradient(135deg, #7b1e00 0%, #c0392b 100%)', tag: '📱 NEW ARRIVALS', title: 'Latest Mobiles & Gadgets', sub: 'Smartphones, Tablets, Wearables', cta: 'Shop Mobiles', img: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&auto=format&fit=crop&q=60', cat: 'Mobiles', tagColor: '#FCA5A5' },
+            { bg: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', tag: '💄 BEAUTY PICKS', title: 'Skincare & Beauty Deals', sub: 'Serums, Moisturizers, Makeup & more', cta: 'Shop Beauty', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300&auto=format&fit=crop&q=60', cat: 'Beauty', tagColor: '#F9A8D4' },
+            { bg: 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)', tag: '🏋️ SPORTS ZONE', title: 'Sports & Fitness Gear', sub: 'Equipment, Apparel, Supplements', cta: 'Shop Sports', img: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=300&auto=format&fit=crop&q=60', cat: 'Sports', tagColor: '#6EE7B7' },
+          ].map((ad, i) => (
+            <Link key={i} to={`/products?category=${ad.cat}`} className="ad-card" style={{ background: ad.bg }}>
+              <div style={{ flex: 1, padding: '1.2rem 1rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: ad.tagColor, letterSpacing: '0.05em', marginBottom: '6px', display: 'block' }}>{ad.tag}</span>
+                <h3 style={{ color: '#FFF', fontSize: '1.1rem', fontWeight: 800, margin: '0 0 6px', lineHeight: 1.2 }}>{ad.title}</h3>
+                <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.78rem', margin: '0 0 12px' }}>{ad.sub}</p>
+                <span style={{ display: 'inline-block', backgroundColor: '#FF9900', color: '#111', fontSize: '0.78rem', fontWeight: 700, padding: '5px 14px', borderRadius: '3px', alignSelf: 'flex-start' }}>{ad.cta}</span>
+              </div>
+              <div style={{ width: '120px', flexShrink: 0, overflow: 'hidden' }}>
+                <img src={ad.img} alt={ad.cat} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }} />
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
+
+
 
       {/* 3 ── Amazon-style "Shop by Brand" wide banner */}
       <section style={{ backgroundColor: '#FFF', border: '1px solid #DDD', borderRadius: '4px', padding: '1.25rem 1.5rem', marginBottom: '1.5rem' }}>

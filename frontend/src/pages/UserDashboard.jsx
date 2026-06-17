@@ -248,7 +248,13 @@ const UserDashboard = () => {
 
       {/* Account Overview Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
-        <div className="card" style={{ border: '1px solid #DDD', display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <div
+          className="card"
+          onClick={() => navigate('/orders')}
+          style={{ border: '1px solid #DDD', display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+          onMouseLeave={e => { e.currentTarget.style.boxShadow = ''; e.currentTarget.style.transform = ''; }}
+        >
           <div style={{ backgroundColor: '#FFF8E7', padding: '1rem', borderRadius: '50%' }}>
             <Package size={24} color="var(--primary)" />
           </div>
@@ -258,7 +264,13 @@ const UserDashboard = () => {
           </div>
         </div>
 
-        <div className="card" style={{ border: '1px solid #DDD', display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <div
+          className="card"
+          onClick={() => navigate('/orders')}
+          style={{ border: '1px solid #DDD', display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+          onMouseLeave={e => { e.currentTarget.style.boxShadow = ''; e.currentTarget.style.transform = ''; }}
+        >
           <div style={{ backgroundColor: '#F0FDF4', padding: '1rem', borderRadius: '50%' }}>
             <ShoppingBag size={24} color="var(--success)" />
           </div>
@@ -268,7 +280,13 @@ const UserDashboard = () => {
           </div>
         </div>
 
-        <div className="card" style={{ border: '1px solid #DDD', display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <div
+          className="card"
+          onClick={() => navigate('/wishlist')}
+          style={{ border: '1px solid #DDD', display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', transition: 'box-shadow 0.2s, transform 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+          onMouseLeave={e => { e.currentTarget.style.boxShadow = ''; e.currentTarget.style.transform = ''; }}
+        >
           <div style={{ backgroundColor: '#FFF5F5', padding: '1rem', borderRadius: '50%' }}>
             <Heart size={24} color="#E03E3E" />
           </div>
@@ -278,6 +296,7 @@ const UserDashboard = () => {
           </div>
         </div>
       </div>
+
 
       {/* Core Split Dashboard Content */}
       <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 0.7fr', gap: '2rem' }}>

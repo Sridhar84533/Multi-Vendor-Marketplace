@@ -143,6 +143,8 @@ const AddProduct = () => {
                 <option value="Books">Books</option>
                 <option value="Groceries">Groceries</option>
                 <option value="Home Appliances">Home Appliances</option>
+                <option value="Beauty">Beauty</option>
+                <option value="Sports">Sports</option>
               </select>
             </div>
             <div className="form-group">

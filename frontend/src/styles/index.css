@@ -74,6 +74,25 @@ img {
   overflow-x: hidden;
 }
 
+/* Login page full-screen override */
+.main-content:has(.login-fullscreen) {
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-fullscreen {
+  flex: 1;
+  min-height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 .container {
   width: 100%;
   max-width: 1500px;

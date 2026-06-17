@@ -33,18 +33,13 @@ const Login = () => {
   };
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      alignItems: 'center', 
-      minHeight: '100vh', 
-      justifyContent: 'center', 
-      padding: '2rem',
-      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)), url(${loginBg})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundAttachment: 'fixed',
-    }}>
+    <div 
+      className="login-fullscreen"
+      style={{ 
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.72)), url(${loginBg})`,
+        padding: '2rem',
+      }}
+    >
       <Link to="/" style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '2rem', color: '#ffffff', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
         Multi-Vendor Marketplace
       </Link>

@@ -60,7 +60,7 @@ const Login = () => {
         boxShadow: '0 8px 32px rgba(0,0,0,0.2)' 
       }}>
         <h2 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem', textAlign: 'center', color: '#333' }}>Sign In</h2>
-        <p style={{ fontSize: '0.9rem', color: '#555', marginBottom: '2rem', textAlign: 'center' }}>Access your vendor or customer dashboard</p>
+
         
         {error && (
           <div style={{ backgroundColor: '#FCF4F4', border: '1px solid #CC0C39', color: '#CC0C39', padding: '0.8rem', borderRadius: '4px', fontSize: '0.85rem', marginBottom: '1rem' }}>

@@ -4,7 +4,8 @@ import API from '../services/api';
 import ProductCard from '../components/ProductCard/ProductCard';
 import CompareBar from '../components/CompareBar/CompareBar';
 import Loader from '../components/Loader/Loader';
-import { ShoppingBag, ChevronRight, Star, X, Tag, Zap, Truck, Gift, Percent, Award } from 'lucide-react';
+import { ShoppingBag, ChevronRight, Star, X } from 'lucide-react';
+
 
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -167,99 +168,133 @@ const Home = () => {
         onOpenCompareModal={() => setShowCompareModal(true)}
       />
 
-      {/* ── Scrolling Promo Ad Ticker ── */}
-      <style>{`
-        @keyframes tickerScroll {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .ticker-track {
-          display: flex;
-          animation: tickerScroll 28s linear infinite;
-          width: max-content;
-        }
-        .ticker-track:hover {
-          animation-play-state: paused;
-        }
-      `}</style>
 
-      <section style={{
-        marginTop: '2rem',
-        marginBottom: '2rem',
-        overflow: 'hidden',
-        background: 'linear-gradient(135deg, #131921 0%, #1a2a3a 100%)',
-        borderRadius: '10px',
-        padding: '0',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-        position: 'relative',
-      }}>
-        {/* Header */}
-        <div style={{
-          padding: '1rem 1.5rem 0.5rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-        }}>
-          <Zap size={18} color="#FF9900" fill="#FF9900" />
-          <span style={{ color: '#FF9900', fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Today's Hot Deals</span>
-          <span style={{ color: '#aaa', fontSize: '0.75rem', marginLeft: '8px' }}>· Hover to pause</span>
-        </div>
+      {/* ══════════════════════════════════════════════
+          AMAZON-STYLE ADS SECTION
+          ══════════════════════════════════════════════ */}
 
-        {/* Scrolling Track */}
-        <div style={{ overflow: 'hidden', padding: '0.75rem 0 1rem' }}>
-          <div className="ticker-track">
-            {[
-              { icon: <Percent size={15} />, label: 'Up to 70% OFF on Electronics', color: '#FF9900' },
-              { icon: <Truck size={15} />, label: 'Free Delivery on orders above ₹499', color: '#10B981' },
-              { icon: <Gift size={15} />, label: 'Buy 2 Get 1 FREE on Fashion', color: '#F472B6' },
-              { icon: <Tag size={15} />, label: 'New Arrivals in Mobiles — Shop Now', color: '#60A5FA' },
-              { icon: <Award size={15} />, label: 'Top Rated Products — Verified Sellers', color: '#FBBF24' },
-              { icon: <Percent size={15} />, label: 'Weekend Sale: Extra 10% with code SAVE10', color: '#A78BFA' },
-              { icon: <Truck size={15} />, label: 'Same-Day Delivery available in select cities', color: '#34D399' },
-              { icon: <Gift size={15} />, label: 'Home Appliances up to 40% OFF', color: '#F87171' },
-              { icon: <Tag size={15} />, label: 'Flash Sale: Ends at Midnight 🔥', color: '#FF9900' },
-              { icon: <Award size={15} />, label: '2476 Loyalty Points? Redeem on your next order!', color: '#FBBF24' },
-              // duplicate for seamless loop
-              { icon: <Percent size={15} />, label: 'Up to 70% OFF on Electronics', color: '#FF9900' },
-              { icon: <Truck size={15} />, label: 'Free Delivery on orders above ₹499', color: '#10B981' },
-              { icon: <Gift size={15} />, label: 'Buy 2 Get 1 FREE on Fashion', color: '#F472B6' },
-              { icon: <Tag size={15} />, label: 'New Arrivals in Mobiles — Shop Now', color: '#60A5FA' },
-              { icon: <Award size={15} />, label: 'Top Rated Products — Verified Sellers', color: '#FBBF24' },
-              { icon: <Percent size={15} />, label: 'Weekend Sale: Extra 10% with code SAVE10', color: '#A78BFA' },
-              { icon: <Truck size={15} />, label: 'Same-Day Delivery available in select cities', color: '#34D399' },
-              { icon: <Gift size={15} />, label: 'Home Appliances up to 40% OFF', color: '#F87171' },
-              { icon: <Tag size={15} />, label: 'Flash Sale: Ends at Midnight 🔥', color: '#FF9900' },
-              { icon: <Award size={15} />, label: '2476 Loyalty Points? Redeem on your next order!', color: '#FBBF24' },
-            ].map((ad, i) => (
+      {/* 1 ── Sponsored Products Row (like Amazon's "Sponsored" product carousel) */}
+      {featuredProducts.length > 0 && (
+        <section style={{ backgroundColor: '#FFF', border: '1px solid #DDD', borderRadius: '4px', padding: '1.25rem 1.5rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <h2 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>Sponsored products related to items in your browsing history</h2>
+            </div>
+            <Link to="/products" style={{ color: '#007185', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>See all results →</Link>
+          </div>
+          <div style={{ display: 'flex', gap: '0', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+            {featuredProducts.slice(0, 8).map((p) => (
               <Link
-                key={i}
-                to="/products"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  margin: '0 1.5rem',
-                  padding: '0.5rem 1.2rem',
-                  background: 'rgba(255,255,255,0.07)',
-                  border: `1px solid ${ad.color}44`,
-                  borderRadius: '20px',
-                  color: ad.color,
-                  fontWeight: 600,
-                  fontSize: '0.875rem',
-                  whiteSpace: 'nowrap',
-                  textDecoration: 'none',
-                  transition: 'background 0.2s',
-                  flexShrink: 0,
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.14)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
+                key={p._id}
+                to={`/products/${p._id}`}
+                style={{ textDecoration: 'none', color: 'inherit', minWidth: '160px', maxWidth: '180px', flex: '0 0 160px', padding: '0.75rem', borderRight: '1px solid #F0F0F0', transition: 'background 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#F7F7F7'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
-                {ad.icon} {ad.label}
+                <div style={{ position: 'relative', marginBottom: '0.6rem' }}>
+                  <img
+                    src={p.images?.[0]?.url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400'}
+                    alt={p.title}
+                    style={{ width: '100%', height: '150px', objectFit: 'contain', display: 'block', backgroundColor: '#FAFAFA' }}
+                  />
+                </div>
+                <p style={{ fontSize: '0.82rem', margin: '0 0 4px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: '1.3', color: '#0F1111' }}>{p.title}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                  {'★★★★☆'.split('').map((s, i) => <span key={i} style={{ color: '#F3A847', fontSize: '0.75rem' }}>{s}</span>)}
+                  <span style={{ fontSize: '0.72rem', color: '#007185' }}>({p.numReviews || 0})</span>
+                </div>
+                <div style={{ fontSize: '0.82rem', color: '#0F1111' }}>
+                  <span style={{ fontSize: '0.65rem', verticalAlign: 'top', lineHeight: '1.8' }}>₹</span>
+                  <span style={{ fontSize: '1.15rem', fontWeight: 700 }}>{Math.floor(p.price)}</span>
+                  <span style={{ fontSize: '0.65rem' }}>{String(p.price).includes('.') ? ('.' + String(p.price).split('.')[1]) : ''}</span>
+                </div>
+                {p.originalPrice && <div style={{ fontSize: '0.75rem', color: '#565959' }}>M.R.P.: <s>₹{p.originalPrice}</s></div>}
+                <div style={{ fontSize: '0.7rem', color: '#007600', marginTop: '2px' }}>FREE Delivery</div>
+                <div style={{ fontSize: '0.68rem', color: '#565959', marginTop: '4px', borderTop: '1px solid #EEE', paddingTop: '4px' }}>Sponsored</div>
               </Link>
             ))}
           </div>
+        </section>
+      )}
+
+      {/* 2 ── Deal Banners (2-col Amazon-style promo blocks) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        {[
+          {
+            bg: 'linear-gradient(135deg, #0a3d62 0%, #1a5276 100%)',
+            tag: '⚡ LIMITED TIME DEAL',
+            title: 'Up to 70% OFF on Electronics',
+            sub: 'Headphones, Laptops, Cameras & more',
+            cta: 'Shop Electronics',
+            img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=300&auto=format&fit=crop&q=60',
+            cat: 'Electronics',
+            tagColor: '#FF9900',
+          },
+          {
+            bg: 'linear-gradient(135deg, #5b0d91 0%, #7d3cad 100%)',
+            tag: '🔥 BESTSELLER',
+            title: 'Fashion Flash Sale',
+            sub: 'Clothing, Shoes, Accessories & more',
+            cta: 'Shop Fashion',
+            img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=300&auto=format&fit=crop&q=60',
+            cat: 'Fashion',
+            tagColor: '#F472B6',
+          },
+          {
+            bg: 'linear-gradient(135deg, #014d2f 0%, #1e8449 100%)',
+            tag: '🎁 SPECIAL OFFER',
+            title: 'Home & Living Deals',
+            sub: 'Furniture, Decor, Appliances & more',
+            cta: 'Shop Home',
+            img: 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=300&auto=format&fit=crop&q=60',
+            cat: 'Home Appliances',
+            tagColor: '#34D399',
+          },
+        ].map((ad, i) => (
+          <Link key={i} to={`/products?category=${ad.cat}`} style={{ textDecoration: 'none', borderRadius: '8px', overflow: 'hidden', background: ad.bg, display: 'flex', alignItems: 'stretch', minHeight: '160px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)', transition: 'transform 0.18s, box-shadow 0.18s' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)'; }}
+          >
+            <div style={{ flex: 1, padding: '1.2rem 1rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: ad.tagColor, letterSpacing: '0.05em', marginBottom: '6px', display: 'block' }}>{ad.tag}</span>
+              <h3 style={{ color: '#FFF', fontSize: 'clamp(0.95rem, 2.5vw, 1.2rem)', fontWeight: 800, margin: '0 0 6px', lineHeight: 1.2 }}>{ad.title}</h3>
+              <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.78rem', margin: '0 0 12px' }}>{ad.sub}</p>
+              <span style={{ display: 'inline-block', backgroundColor: '#FF9900', color: '#111', fontSize: '0.78rem', fontWeight: 700, padding: '5px 14px', borderRadius: '3px' }}>{ad.cta}</span>
+            </div>
+            <div style={{ width: '130px', flexShrink: 0, overflow: 'hidden' }}>
+              <img src={ad.img} alt={ad.cat} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }} />
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* 3 ── Amazon-style "Shop by Brand" wide banner */}
+      <section style={{ backgroundColor: '#FFF', border: '1px solid #DDD', borderRadius: '4px', padding: '1.25rem 1.5rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h2 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>Deals in top categories</h2>
+          <Link to="/products" style={{ color: '#007185', fontSize: '0.85rem' }}>See all deals →</Link>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 130px), 1fr))', gap: '1px', backgroundColor: '#EEE', border: '1px solid #EEE', borderRadius: '4px', overflow: 'hidden' }}>
+          {[
+            { label: 'Electronics', discount: 'Up to 70% off', img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=200&auto=format&fit=crop&q=60', cat: 'Electronics' },
+            { label: 'Fashion', discount: 'Up to 60% off', img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=200&auto=format&fit=crop&q=60', cat: 'Fashion' },
+            { label: 'Mobiles', discount: 'Up to 40% off', img: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=200&auto=format&fit=crop&q=60', cat: 'Mobiles' },
+            { label: 'Home & Living', discount: 'Up to 50% off', img: 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=200&auto=format&fit=crop&q=60', cat: 'Home Appliances' },
+            { label: 'Beauty', discount: 'Up to 35% off', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&auto=format&fit=crop&q=60', cat: 'Beauty' },
+            { label: 'Sports', discount: 'Up to 45% off', img: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=200&auto=format&fit=crop&q=60', cat: 'Sports' },
+          ].map((item, i) => (
+            <Link key={i} to={`/products?category=${item.cat}`} style={{ textDecoration: 'none', background: '#FFF', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '1rem 0.5rem', transition: 'background 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#F7F7F7'}
+              onMouseLeave={e => e.currentTarget.style.background = '#FFF'}
+            >
+              <img src={item.img} alt={item.label} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '4px', marginBottom: '8px' }} />
+              <p style={{ margin: 0, fontWeight: 700, fontSize: '0.82rem', color: '#0F1111', textAlign: 'center' }}>{item.label}</p>
+              <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: '#CC0C39', fontWeight: 600, textAlign: 'center' }}>{item.discount}</p>
+            </Link>
+          ))}
         </div>
       </section>
+
 
       {/* Compare Modal */}
       {showCompareModal && (

@@ -33,13 +33,30 @@ const Login = () => {
   };
 
   return (
-    <div 
-      className="login-fullscreen"
-      style={{ 
+    <>
+      {/* Fixed full-screen background — unaffected by any parent padding/margin */}
+      <div style={{
+        position: 'fixed',
+        inset: 0,
         backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.72)), url(${loginBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        zIndex: 0,
+      }} />
+
+      {/* Scrollable content on top */}
+      <div style={{
+        position: 'relative',
+        zIndex: 1,
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
         padding: '2rem',
-      }}
-    >
+        marginBottom: '-2rem',
+      }}>
       <Link to="/" style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '2rem', color: '#ffffff', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
         Multi-Vendor Marketplace
       </Link>
@@ -125,6 +142,7 @@ const Login = () => {
         </button>
       </Link>
     </div>
+    </>
   );
 };
 

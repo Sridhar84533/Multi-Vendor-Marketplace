@@ -4,7 +4,7 @@ import API from '../services/api';
 import ProductCard from '../components/ProductCard/ProductCard';
 import CompareBar from '../components/CompareBar/CompareBar';
 import Loader from '../components/Loader/Loader';
-import { ShoppingBag, ChevronRight, Star, X } from 'lucide-react';
+import { ShoppingBag, ChevronRight, Star, X, Tag, Zap, Truck, Gift, Percent, Award } from 'lucide-react';
 
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -166,6 +166,100 @@ const Home = () => {
         onClear={clearCompare}
         onOpenCompareModal={() => setShowCompareModal(true)}
       />
+
+      {/* ── Scrolling Promo Ad Ticker ── */}
+      <style>{`
+        @keyframes tickerScroll {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .ticker-track {
+          display: flex;
+          animation: tickerScroll 28s linear infinite;
+          width: max-content;
+        }
+        .ticker-track:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
+
+      <section style={{
+        marginTop: '2rem',
+        marginBottom: '2rem',
+        overflow: 'hidden',
+        background: 'linear-gradient(135deg, #131921 0%, #1a2a3a 100%)',
+        borderRadius: '10px',
+        padding: '0',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+        position: 'relative',
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: '1rem 1.5rem 0.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}>
+          <Zap size={18} color="#FF9900" fill="#FF9900" />
+          <span style={{ color: '#FF9900', fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Today's Hot Deals</span>
+          <span style={{ color: '#aaa', fontSize: '0.75rem', marginLeft: '8px' }}>· Hover to pause</span>
+        </div>
+
+        {/* Scrolling Track */}
+        <div style={{ overflow: 'hidden', padding: '0.75rem 0 1rem' }}>
+          <div className="ticker-track">
+            {[
+              { icon: <Percent size={15} />, label: 'Up to 70% OFF on Electronics', color: '#FF9900' },
+              { icon: <Truck size={15} />, label: 'Free Delivery on orders above ₹499', color: '#10B981' },
+              { icon: <Gift size={15} />, label: 'Buy 2 Get 1 FREE on Fashion', color: '#F472B6' },
+              { icon: <Tag size={15} />, label: 'New Arrivals in Mobiles — Shop Now', color: '#60A5FA' },
+              { icon: <Award size={15} />, label: 'Top Rated Products — Verified Sellers', color: '#FBBF24' },
+              { icon: <Percent size={15} />, label: 'Weekend Sale: Extra 10% with code SAVE10', color: '#A78BFA' },
+              { icon: <Truck size={15} />, label: 'Same-Day Delivery available in select cities', color: '#34D399' },
+              { icon: <Gift size={15} />, label: 'Home Appliances up to 40% OFF', color: '#F87171' },
+              { icon: <Tag size={15} />, label: 'Flash Sale: Ends at Midnight 🔥', color: '#FF9900' },
+              { icon: <Award size={15} />, label: '2476 Loyalty Points? Redeem on your next order!', color: '#FBBF24' },
+              // duplicate for seamless loop
+              { icon: <Percent size={15} />, label: 'Up to 70% OFF on Electronics', color: '#FF9900' },
+              { icon: <Truck size={15} />, label: 'Free Delivery on orders above ₹499', color: '#10B981' },
+              { icon: <Gift size={15} />, label: 'Buy 2 Get 1 FREE on Fashion', color: '#F472B6' },
+              { icon: <Tag size={15} />, label: 'New Arrivals in Mobiles — Shop Now', color: '#60A5FA' },
+              { icon: <Award size={15} />, label: 'Top Rated Products — Verified Sellers', color: '#FBBF24' },
+              { icon: <Percent size={15} />, label: 'Weekend Sale: Extra 10% with code SAVE10', color: '#A78BFA' },
+              { icon: <Truck size={15} />, label: 'Same-Day Delivery available in select cities', color: '#34D399' },
+              { icon: <Gift size={15} />, label: 'Home Appliances up to 40% OFF', color: '#F87171' },
+              { icon: <Tag size={15} />, label: 'Flash Sale: Ends at Midnight 🔥', color: '#FF9900' },
+              { icon: <Award size={15} />, label: '2476 Loyalty Points? Redeem on your next order!', color: '#FBBF24' },
+            ].map((ad, i) => (
+              <Link
+                key={i}
+                to="/products"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  margin: '0 1.5rem',
+                  padding: '0.5rem 1.2rem',
+                  background: 'rgba(255,255,255,0.07)',
+                  border: `1px solid ${ad.color}44`,
+                  borderRadius: '20px',
+                  color: ad.color,
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  whiteSpace: 'nowrap',
+                  textDecoration: 'none',
+                  transition: 'background 0.2s',
+                  flexShrink: 0,
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.14)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
+              >
+                {ad.icon} {ad.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Compare Modal */}
       {showCompareModal && (

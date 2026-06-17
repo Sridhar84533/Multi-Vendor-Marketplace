@@ -242,25 +242,7 @@ const UserDashboard = () => {
             </div>
           </div>
 
-          <div 
-            style={{ 
-              backgroundColor: 'rgba(255,255,255,0.08)', 
-              border: '1px solid rgba(255,255,255,0.15)', 
-              padding: '1.2rem 2rem', 
-              borderRadius: '6px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px'
-            }}
-          >
-            <IndianRupee color="#10B981" size={32} />
-            <div>
-              <span style={{ fontSize: '0.8rem', color: '#aaa', display: 'block', textTransform: 'uppercase' }}>Wallet Balance</span>
-              <strong style={{ fontSize: '1.4rem', color: '#10B981', fontWeight: 700 }}>
-                ₹{(user?.walletBalance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-              </strong>
-            </div>
-          </div>
+
         </div>
       </div>
 

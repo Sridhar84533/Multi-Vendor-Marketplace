@@ -171,12 +171,10 @@ const Checkout = () => {
   const shippingFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_CHARGE;
   const tax = 0;
   const loyaltyPointsAvailable = user?.loyaltyPoints || 0;
-  const walletBalanceAvailable = user?.walletBalance || 0;
 
   const baseTotal = subtotal + shippingFee + tax - discount;
   const loyaltyPointsUsed = useLoyalty ? Math.min(loyaltyPointsAvailable, baseTotal) : 0;
-  const walletAmountUsed = Math.min(walletBalanceAvailable, baseTotal - loyaltyPointsUsed);
-  const total = baseTotal - loyaltyPointsUsed - walletAmountUsed;
+  const total = baseTotal - loyaltyPointsUsed;
 
   const handleApplyCoupon = async () => {
     setCouponMsg('');
@@ -210,11 +208,11 @@ const Checkout = () => {
     tax,
     discount,
     loyaltyPointsUsed,
-    walletAmountUsed,
+    walletAmountUsed: 0,
     total,
     couponCode,
     paymentMethod,
-  }), [items, user, selectedAddress, subtotal, shippingFee, tax, discount, loyaltyPointsUsed, walletAmountUsed, total, couponCode, paymentMethod]);
+  }), [items, user, selectedAddress, subtotal, shippingFee, tax, discount, loyaltyPointsUsed, total, couponCode, paymentMethod]);
 
   /* Validate inline payment form before submitting */
   const validateInlinePayment = () => {
@@ -472,11 +470,6 @@ const Checkout = () => {
                   <span>Loyalty Points:</span><span>- Rs. {loyaltyPointsUsed.toFixed(2)}</span>
                 </div>
               )}
-              {walletAmountUsed > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--success)', fontWeight: 600 }}>
-                  <span>Wallet Balance:</span><span>- Rs. {walletAmountUsed.toFixed(2)}</span>
-                </div>
-              )}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 700, margin: '1rem 0' }}>
@@ -496,14 +489,7 @@ const Checkout = () => {
               </div>
             )}
 
-            {/* Wallet Section */}
-            {walletAmountUsed > 0 && (
-              <div style={{ margin: '0 0 1rem', backgroundColor: '#F0FDF4', border: '1px solid #86EFAC', padding: '0.8rem', borderRadius: '4px' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: '#166534', fontWeight: 600 }}>
-                  Rs. {walletAmountUsed.toFixed(2)} automatically deducted from Wallet (Balance: Rs. {walletBalanceAvailable.toFixed(2)})
-                </span>
-              </div>
-            )}
+
 
             {/* Coupon */}
             <div style={{ marginBottom: '1.5rem' }}>

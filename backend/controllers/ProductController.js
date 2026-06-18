@@ -290,7 +290,7 @@ exports.getRecommendations = async (req, res) => {
           isActive: true,
           category: baseProduct.category,
           _id: { $ne: baseProduct._id },
-        }).limit(3);
+        }).limit(10);
       }
     } else if (type === 'customers-also-bought' && productId) {
       const baseProduct = await Product.findById(productId);

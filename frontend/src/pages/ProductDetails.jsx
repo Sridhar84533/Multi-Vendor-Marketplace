@@ -596,7 +596,7 @@ const ProductDetails = () => {
                   gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
                   gap: '0.8rem',
                 }}>
-                  {similarProducts.slice(0, 4).map((sim) => (
+                  {similarProducts.map((sim) => (
                     <div
                       key={sim._id}
                       onClick={() => {

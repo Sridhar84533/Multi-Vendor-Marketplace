@@ -80,6 +80,81 @@ export default function RefurbishedOrders() {
 
   const toggleExpand = (id) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
 
+  const generateFrontendChecklist = (product) => {
+    if (!product) return [];
+    const checklist = [];
+    const specs = product.specifications || [];
+    const category = (product.category || '').toLowerCase();
+    const title = (product.title || '').toLowerCase();
+
+    const isElectronic = 
+      category.includes('electronic') || 
+      category.includes('phone') || 
+      category.includes('mobile') || 
+      category.includes('laptop') || 
+      category.includes('computer') || 
+      category.includes('tablet') || 
+      category.includes('camera') ||
+      title.includes('phone') || 
+      title.includes('laptop') || 
+      title.includes('watch') || 
+      title.includes('earphone') || 
+      title.includes('headphone');
+
+    const isRacket = title.includes('racket') || title.includes('bat') || category.includes('sport');
+
+    specs.forEach(spec => {
+      const key = (spec.key || '').trim();
+      const val = (spec.value || '').trim();
+      if (!key || !val) return;
+
+      if (key.toLowerCase().includes('battery') || key.toLowerCase().includes('capacity')) {
+        checklist.push(`Battery & Charging (${val})`);
+      } else if (key.toLowerCase().includes('screen') || key.toLowerCase().includes('display') || key.toLowerCase().includes('resolution')) {
+        checklist.push(`Display / Screen (${val})`);
+      } else if (key.toLowerCase().includes('camera') || key.toLowerCase().includes('sensor')) {
+        checklist.push(`Camera / Lens (${val})`);
+      } else if (key.toLowerCase().includes('material')) {
+        checklist.push(`Material & Structure (${val})`);
+      } else if (key.toLowerCase().includes('weight') || key.toLowerCase().includes('balance')) {
+        checklist.push(`Weight & Balance Verification (${val})`);
+      } else if (key.toLowerCase().includes('tension') || key.toLowerCase().includes('string')) {
+        checklist.push(`String / Wire Tension (${val})`);
+      } else if (key.toLowerCase().includes('grip') || key.toLowerCase().includes('handle')) {
+        checklist.push(`Handle & Grip Wrap (${val})`);
+      } else if (key.toLowerCase().includes('size') || key.toLowerCase().includes('dimension')) {
+        checklist.push(`Size / Dimensions Verification (${val})`);
+      } else {
+        checklist.push(`Verify ${key}: ${val}`);
+      }
+    });
+
+    const hasItem = (name) => checklist.some(item => item.toLowerCase().includes(name.toLowerCase()));
+
+    if (isElectronic) {
+      if (!hasItem('Display')) checklist.push('Display / Screen Check');
+      if (!hasItem('Battery')) checklist.push('Battery & Charging Diagnostics');
+      if (!hasItem('Camera')) checklist.push('Camera (Front & Rear) Check');
+      if (!hasItem('Speaker') && !hasItem('Audio')) checklist.push('Speakers & Microphone Check');
+      checklist.push('All Buttons & Ports Operational');
+      checklist.push('Software / OS Reset & Check');
+      checklist.push('Physical Body / Frame Scratch Check');
+    } else if (isRacket) {
+      if (!hasItem('Material')) checklist.push('Frame Material structural integrity');
+      if (!hasItem('Tension')) checklist.push('String Tension & alignment');
+      if (!hasItem('Grip')) checklist.push('Grip Wrap & Handle check');
+      if (!hasItem('Weight')) checklist.push('Weight & Balance alignment');
+      checklist.push('Physical Body / Paint Scratches Check');
+    } else {
+      if (!hasItem('Material')) checklist.push('Material structural check');
+      if (!hasItem('Size')) checklist.push('Dimensions & Alignment check');
+      checklist.push('Physical Body & Aesthetic integrity');
+    }
+
+    checklist.push('Accessories Included Verification');
+    return checklist;
+  };
+
   const getForm = (id) => {
     if (forms[id]) return forms[id];
 
@@ -94,6 +169,21 @@ export default function RefurbishedOrders() {
         qcStatus: 'Passed',
         qcChecklist: placeholderList.map(c => ({ item: c.item, passed: true })),
       };
+    }
+
+    // Generate checklist from order product specifications!
+    const product = order?.items?.[0]?.product;
+    if (product) {
+      const generatedList = generateFrontendChecklist(product);
+      if (generatedList.length > 0) {
+        return {
+          refurbishedDiscount: 20,
+          refurbishedCondition: 'Good',
+          refurbishedNotes: '',
+          qcStatus: 'Passed',
+          qcChecklist: generatedList.map(item => ({ item, passed: true })),
+        };
+      }
     }
 
     return {

@@ -32,7 +32,7 @@ const Filters = ({
               <input
                 type="radio"
                 name="category"
-                checked={selectedCategory === cat}
+                checked={selectedCategory && selectedCategory.toLowerCase() === cat.toLowerCase()}
                 onChange={() => onCategoryChange(cat)}
               />
               {cat}
@@ -50,7 +50,7 @@ const Filters = ({
               <label key={br} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
-                  checked={selectedBrand.includes(br)}
+                  checked={selectedBrand && selectedBrand.some((b) => b.toLowerCase() === br.toLowerCase())}
                   onChange={() => onBrandChange(br)}
                 />
                 {br}

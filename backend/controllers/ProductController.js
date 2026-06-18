@@ -36,10 +36,15 @@ exports.getProducts = async (req, res) => {
       query.$text = { $search: search };
     }
     if (category) {
-      query.category = category;
+      const escapedCat = category.trim().replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      query.category = new RegExp(`^\\s*${escapedCat}\\s*$`, 'i');
     }
     if (brand) {
-      query.brand = { $in: brand.split(',').map((b) => b.trim()) };
+      const brandList = brand.split(',').map((b) => {
+        const escaped = b.trim().replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        return new RegExp(`^\\s*${escaped}\\s*$`, 'i');
+      });
+      query.brand = { $in: brandList };
     }
     if (minPrice || maxPrice) {
       query.price = {};
@@ -152,9 +157,9 @@ exports.createProduct = async (req, res) => {
       title,
       description,
       shortDescription,
-      category,
-      subCategory,
-      brand,
+      category: category ? category.trim() : category,
+      subCategory: subCategory ? subCategory.trim() : subCategory,
+      brand: brand ? brand.trim() : brand,
       price,
       discountPrice,
       discountPercent,
@@ -208,9 +213,9 @@ exports.updateProduct = async (req, res) => {
     if (title) product.title = title;
     if (description) product.description = description;
     if (shortDescription) product.shortDescription = shortDescription;
-    if (category) product.category = category;
-    if (subCategory) product.subCategory = subCategory;
-    if (brand) product.brand = brand;
+    if (category) product.category = category.trim();
+    if (subCategory) product.subCategory = subCategory.trim();
+    if (brand) product.brand = brand.trim();
     if (stock !== undefined) product.stock = stock;
     if (sku) product.sku = sku;
     if (variants) product.variants = typeof variants === 'string' ? JSON.parse(variants) : variants;

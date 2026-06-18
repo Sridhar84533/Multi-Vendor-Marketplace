@@ -16,16 +16,16 @@ const Products = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
 
-  // Filter States
-  const [category, setCategory] = useState(searchParams.get('category') || '');
-  const [selectedBrand, setSelectedBrand] = useState(
-    searchParams.get('brand') ? searchParams.get('brand').split(',').map((b) => b.trim()) : []
-  );
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
-  const [rating, setRating] = useState('');
-  const [sort, setSort] = useState('newest');
-  const [page, setPage] = useState(1);
+  // Filter states derived directly from searchParams (single source of truth)
+  const category = searchParams.get('category') || '';
+  const selectedBrand = searchParams.get('brand')
+    ? searchParams.get('brand').split(',').map((b) => b.trim()).filter(Boolean)
+    : [];
+  const minPrice = searchParams.get('minPrice') || '';
+  const maxPrice = searchParams.get('maxPrice') || '';
+  const rating = searchParams.get('rating') || '';
+  const sort = searchParams.get('sort') || 'newest';
+  const page = Number(searchParams.get('page')) || 1;
 
   // Compare States
   const [compareList, setCompareList] = useState([]);
@@ -60,53 +60,80 @@ const Products = () => {
     fetchProducts();
   }, [searchParams, category, selectedBrand, minPrice, maxPrice, rating, sort, page]);
 
-  // Sync category and brand state with query params
-  useEffect(() => {
-    const categoryParam = searchParams.get('category');
-    setCategory(categoryParam || '');
-
-    const brandParam = searchParams.get('brand');
-    if (brandParam) {
-      setSelectedBrand(brandParam.split(',').map((b) => b.trim()));
-    } else {
-      setSelectedBrand([]);
-    }
-  }, [searchParams]);
-
   const handleCategoryChange = (cat) => {
-    setCategory(cat);
-    setPage(1);
+    const params = new URLSearchParams(searchParams);
+    if (cat) {
+      params.set('category', cat);
+    } else {
+      params.delete('category');
+    }
+    params.set('page', '1');
+    setSearchParams(params);
   };
 
   const handleBrandChange = (br) => {
-    const index = selectedBrand.indexOf(br);
+    const params = new URLSearchParams(searchParams);
+    let brands = params.get('brand')
+      ? params.get('brand').split(',').map((b) => b.trim()).filter(Boolean)
+      : [];
+    const index = brands.indexOf(br);
     if (index > -1) {
-      setSelectedBrand(selectedBrand.filter((item) => item !== br));
+      brands = brands.filter((item) => item !== br);
     } else {
-      setSelectedBrand([...selectedBrand, br]);
+      brands = [...brands, br];
     }
-    setPage(1);
+    if (brands.length > 0) {
+      params.set('brand', brands.join(','));
+    } else {
+      params.delete('brand');
+    }
+    params.set('page', '1');
+    setSearchParams(params);
   };
 
   const handlePriceChange = (type, val) => {
-    if (type === 'min') setMinPrice(val);
-    if (type === 'max') setMaxPrice(val);
-    setPage(1);
+    const params = new URLSearchParams(searchParams);
+    if (type === 'min') {
+      if (val) params.set('minPrice', val);
+      else params.delete('minPrice');
+    }
+    if (type === 'max') {
+      if (val) params.set('maxPrice', val);
+      else params.delete('maxPrice');
+    }
+    params.set('page', '1');
+    setSearchParams(params);
   };
 
   const handleRatingChange = (stars) => {
-    setRating(stars);
-    setPage(1);
+    const params = new URLSearchParams(searchParams);
+    if (stars) {
+      params.set('rating', String(stars));
+    } else {
+      params.delete('rating');
+    }
+    params.set('page', '1');
+    setSearchParams(params);
+  };
+
+  const handleSortChange = (newSort) => {
+    const params = new URLSearchParams(searchParams);
+    if (newSort && newSort !== 'newest') {
+      params.set('sort', newSort);
+    } else {
+      params.delete('sort');
+    }
+    params.set('page', '1');
+    setSearchParams(params);
+  };
+
+  const handlePageChange = (newPage) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', String(newPage));
+    setSearchParams(params);
   };
 
   const handleClear = () => {
-    setCategory('');
-    setSelectedBrand([]);
-    setMinPrice('');
-    setMaxPrice('');
-    setRating('');
-    setSort('newest');
-    setPage(1);
     setSearchParams({});
   };
 
@@ -132,7 +159,7 @@ const Products = () => {
         <div>
           <select
             value={sort}
-            onChange={(e) => setSort(e.target.value)}
+            onChange={(e) => handleSortChange(e.target.value)}
             style={{ padding: '0.4rem 0.8rem', border: '1px solid #DDD', borderRadius: '4px', outline: 'none' }}
           >
             <option value="newest">Sort by: Newest Arrivals</option>
@@ -152,7 +179,7 @@ const Products = () => {
           selectedBrand={selectedBrand}
           minPrice={minPrice}
           maxPrice={maxPrice}
-          selectedRating={rating}
+          selectedRating={rating ? Number(rating) : ''}
           onCategoryChange={handleCategoryChange}
           onBrandChange={handleBrandChange}
           onPriceChange={handlePriceChange}
@@ -187,7 +214,7 @@ const Products = () => {
                   {[...Array(totalPages)].map((_, idx) => (
                     <button
                       key={idx}
-                      onClick={() => setPage(idx + 1)}
+                      onClick={() => handlePageChange(idx + 1)}
                       className={`btn ${page === idx + 1 ? 'btn-primary' : 'btn-outline'}`}
                       style={{ padding: '0.4rem 0.8rem' }}
                     >

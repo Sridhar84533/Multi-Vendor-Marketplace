@@ -1,6 +1,33 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import API from '../services/api';
 
+// ─── Helpers: use sessionStorage so each browser tab has its OWN session ───
+// This allows a vendor in Tab A and a customer in Tab B to be logged in
+// simultaneously without overwriting each other's tokens.
+
+const getTokenKey = (role) => {
+  if (role === 'vendor') return 'vendor_token';
+  if (role === 'admin')  return 'admin_token';
+  return 'customer_token';
+};
+
+const saveToken = (role, token) => {
+  sessionStorage.setItem(getTokenKey(role), token);
+};
+
+const clearToken = (role) => {
+  sessionStorage.removeItem(getTokenKey(role));
+};
+
+const readInitialToken = () => {
+  const path = window.location.pathname;
+  if (path.startsWith('/admin'))  return sessionStorage.getItem('admin_token')  || null;
+  if (path.startsWith('/seller')) return sessionStorage.getItem('vendor_token') || null;
+  return sessionStorage.getItem('customer_token') || sessionStorage.getItem('vendor_token') || null;
+};
+
+// ─── Async Thunks ────────────────────────────────────────────────────────────
+
 export const loadUser = createAsyncThunk('auth/loadUser', async (_, { rejectWithValue }) => {
   try {
     const res = await API.get('/auth/me');
@@ -14,14 +41,8 @@ export const loginUser = createAsyncThunk('auth/loginUser', async (credentials, 
   try {
     const res = await API.post('/auth/login', credentials);
     const { token, user } = res.data;
-    if (user?.role === 'vendor') {
-      localStorage.setItem('vendor_token', token);
-    } else if (user?.role === 'admin') {
-      localStorage.setItem('admin_token', token);
-    } else {
-      localStorage.setItem('customer_token', token);
-    }
-    localStorage.setItem('token', token);
+    // Store in sessionStorage (tab-specific – no cross-tab conflict)
+    saveToken(user?.role, token);
     return res.data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Login failed');
@@ -32,47 +53,39 @@ export const registerUser = createAsyncThunk('auth/registerUser', async (data, {
   try {
     const res = await API.post('/auth/register', data);
     const { token, user } = res.data;
-    if (user?.role === 'vendor') {
-      localStorage.setItem('vendor_token', token);
-    } else if (user?.role === 'admin') {
-      localStorage.setItem('admin_token', token);
-    } else {
-      localStorage.setItem('customer_token', token);
-    }
-    localStorage.setItem('token', token);
+    saveToken(user?.role, token);
     return res.data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Registration failed');
   }
 });
 
+// ─── Slice ───────────────────────────────────────────────────────────────────
+
 const authSlice = createSlice({
   name: 'auth',
-  initialState: {
-    token: (() => {
-      const isSellerRoute = window.location.pathname.startsWith('/seller');
-      const isAdminRoute = window.location.pathname.startsWith('/admin');
-      if (isAdminRoute) return localStorage.getItem('admin_token') || localStorage.getItem('token');
-      if (isSellerRoute) return localStorage.getItem('vendor_token') || localStorage.getItem('token');
-      return localStorage.getItem('customer_token') || localStorage.getItem('token');
-    })(),
-    user: null,
-    loading: false,
-    error: null,
-    isAuthenticated: false,
-  },
+  initialState: (() => {
+    const token = readInitialToken();
+    return {
+      token,
+      user: null,
+      // If there's a stored token we haven't verified yet, mark as loading
+      // so PrivateRoute/VendorRoute don't flash-redirect to /login
+      loading: Boolean(token),
+      error: null,
+      isAuthenticated: false,
+    };
+  })(),
   reducers: {
     logout: (state) => {
-      const isSellerRoute = window.location.pathname.startsWith('/seller');
-      const isAdminRoute = window.location.pathname.startsWith('/admin');
-      if (isAdminRoute) {
-        localStorage.removeItem('admin_token');
-      } else if (isSellerRoute) {
-        localStorage.removeItem('vendor_token');
-      } else {
-        localStorage.removeItem('customer_token');
+      const path = window.location.pathname;
+      if (path.startsWith('/admin'))       clearToken('admin');
+      else if (path.startsWith('/seller')) clearToken('vendor');
+      else {
+        // On non-role routes, clear whichever session token is present
+        clearToken('customer');
+        clearToken('vendor');
       }
-      localStorage.removeItem('token');
       state.token = null;
       state.user = null;
       state.isAuthenticated = false;

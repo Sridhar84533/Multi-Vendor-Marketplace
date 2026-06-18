@@ -14,8 +14,17 @@ const Filters = ({
   onRatingChange,
   onClear,
 }) => {
+  // Toggle category: clicking the already-selected category deselects it
+  const handleCategoryClick = (cat) => {
+    if (selectedCategory && selectedCategory.toLowerCase() === cat.toLowerCase()) {
+      onCategoryChange(''); // deselect
+    } else {
+      onCategoryChange(cat);
+    }
+  };
+
   return (
-    <aside style={{ width: '250px', backgroundColor: '#FFF', padding: '1.5rem', borderRadius: '4px', border: '1px solid #DDD' }}>
+    <aside style={{ width: '250px', backgroundColor: '#FFF', padding: '1.5rem', borderRadius: '4px', border: '1px solid #DDD', flexShrink: 0 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Filters</h3>
         <button onClick={onClear} style={{ border: 'none', background: 'none', color: '#0066c0', cursor: 'pointer', fontSize: '0.85rem' }}>
@@ -24,22 +33,34 @@ const Filters = ({
       </div>
 
       {/* Categories */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.6rem' }}>Category</h4>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-          {categories.map((cat) => (
-            <label key={cat} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', cursor: 'pointer' }}>
+      {categories.length > 0 && (
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.6rem' }}>Category</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+            {/* "All" option to deselect */}
+            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', cursor: 'pointer' }}>
               <input
                 type="radio"
                 name="category"
-                checked={selectedCategory && selectedCategory.toLowerCase() === cat.toLowerCase()}
-                onChange={() => onCategoryChange(cat)}
+                checked={!selectedCategory}
+                onChange={() => onCategoryChange('')}
               />
-              {cat}
+              All Categories
             </label>
-          ))}
+            {categories.map((cat) => (
+              <label key={cat} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', cursor: 'pointer' }}>
+                <input
+                  type="radio"
+                  name="category"
+                  checked={selectedCategory && selectedCategory.toLowerCase() === cat.toLowerCase()}
+                  onChange={() => handleCategoryClick(cat)}
+                />
+                {cat}
+              </label>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Brands */}
       {brands.length > 0 && (

@@ -74,8 +74,15 @@ exports.getProducts = async (req, res) => {
     const total = await Product.countDocuments(query);
 
     // Get unique categories and brands for filters
-    const categories = await Product.distinct('category', { isActive: true });
-    const brands = await Product.distinct('brand', { isActive: true });
+    // Brands: filtered by the active category so only relevant brands appear
+    const brandFilterQuery = { isActive: true };
+    if (query.category) brandFilterQuery.category = query.category;
+    const brands = await Product.distinct('brand', brandFilterQuery);
+
+    // Categories: filtered by the active brand selection so only relevant categories appear
+    const categoryFilterQuery = { isActive: true };
+    if (query.brand) categoryFilterQuery.brand = query.brand;
+    const categories = await Product.distinct('category', categoryFilterQuery);
 
     res.json({
       products,

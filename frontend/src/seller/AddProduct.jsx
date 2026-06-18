@@ -14,7 +14,7 @@ const AddProduct = () => {
   const { user } = useSelector((state) => state.auth);
   const [description, setDescription] = useState('');
   const [shortDescription, setShortDescription] = useState('');
-  const [category, setCategory] = useState('Electronics');
+  const [category, setCategory] = useState('');
   const [brand, setBrand] = useState('');
   const [price, setPrice] = useState('');
   const [discountPrice, setDiscountPrice] = useState('');
@@ -136,7 +136,14 @@ const AddProduct = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
             <div className="form-group">
               <label className="form-label">Category</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value)} className="form-control" style={{ backgroundColor: '#FFF' }}>
+              <select 
+                required 
+                value={category} 
+                onChange={(e) => setCategory(e.target.value)} 
+                className="form-control" 
+                style={{ backgroundColor: '#FFF' }}
+              >
+                <option value="" disabled>-- Select Category --</option>
                 <option value="Electronics">Electronics</option>
                 <option value="Fashion">Fashion</option>
                 <option value="Mobiles">Mobiles</option>

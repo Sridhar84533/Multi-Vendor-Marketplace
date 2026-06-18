@@ -102,10 +102,16 @@ const Navbar = () => {
               </Link>
 
               {isVendor && (
-                <Link to="/seller" className="nav-link">
-                  <span className="nav-line-1">Seller</span>
-                  <span className="nav-line-2">Dashboard</span>
-                </Link>
+                <>
+                  <Link to="/seller" className="nav-link">
+                    <span className="nav-line-1">Seller</span>
+                    <span className="nav-line-2">Dashboard</span>
+                  </Link>
+                  <Link to="/seller/refurbished-orders" className="nav-link">
+                    <span className="nav-line-1">Refurbish</span>
+                    <span className="nav-line-2">Returns</span>
+                  </Link>
+                </>
               )}
 
               {isAdmin && (
@@ -117,10 +123,16 @@ const Navbar = () => {
 
               {/* Returns & Orders only for customers */}
               {!isVendor && !isAdmin && (
-                <Link to="/orders" className="nav-link">
-                  <span className="nav-line-1">Returns</span>
-                  <span className="nav-line-2">&amp; Orders</span>
-                </Link>
+                <>
+                  <Link to="/refurbished" className="nav-link">
+                    <span className="nav-line-1">Refurbished</span>
+                    <span className="nav-line-2">Deals</span>
+                  </Link>
+                  <Link to="/orders" className="nav-link">
+                    <span className="nav-line-1">Returns</span>
+                    <span className="nav-line-2">&amp; Orders</span>
+                  </Link>
+                </>
               )}
 
               {/* Notification Bell */}
@@ -183,10 +195,16 @@ const Navbar = () => {
               </div>
             </>
           ) : (
-            <Link to="/login" className="nav-link">
-              <span className="nav-line-1">Hello, sign in</span>
-              <span className="nav-line-2">Account &amp; Lists</span>
-            </Link>
+            <>
+              <Link to="/refurbished" className="nav-link">
+                <span className="nav-line-1">Refurbished</span>
+                <span className="nav-line-2">Deals</span>
+              </Link>
+              <Link to="/login" className="nav-link">
+                <span className="nav-line-1">Hello, sign in</span>
+                <span className="nav-line-2">Account &amp; Lists</span>
+              </Link>
+            </>
           )}
         </div>
       </nav>

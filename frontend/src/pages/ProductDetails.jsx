@@ -190,6 +190,62 @@ const ProductDetails = () => {
             </div>
           </div>
 
+          {/* Refurbished Highlights & QC Checklist Box */}
+          {product.isRefurbished && (
+            <div style={{
+              background: '#f0fdf4',
+              border: '1px solid #bbf7d0',
+              borderRadius: '12px',
+              padding: '1.25rem',
+              marginBottom: '1.5rem',
+              boxShadow: '0 2px 8px rgba(22,163,74,0.05)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <span style={{
+                  background: 'linear-gradient(135deg, #16a34a, #15803d)',
+                  color: '#fff',
+                  fontSize: '0.7rem',
+                  fontWeight: 800,
+                  padding: '2px 8px',
+                  borderRadius: '10px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                }}>
+                  Certified Refurbished
+                </span>
+                <span style={{ fontSize: '0.85rem', color: '#16a34a', fontWeight: 700 }}>
+                  Condition: {product.refurbishedCondition}
+                </span>
+              </div>
+              <p style={{ margin: '0 0 12px', fontSize: '0.85rem', color: '#14532d', lineHeight: '1.4' }}>
+                This is a returned product that has been professionally tested, inspected, and restored.
+                {product.refurbishedNotes && (
+                  <span style={{ display: 'block', marginTop: '4px', fontSize: '0.8rem', color: '#3f6212', fontStyle: 'italic' }}>
+                    <strong>Seller Notes:</strong> "{product.refurbishedNotes}"
+                  </span>
+                )}
+              </p>
+
+              {product.qcChecklist && product.qcChecklist.length > 0 && (
+                <div>
+                  <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#166534', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                    Diagnostic Verification Check ({product.qcChecklist.filter(c => c.passed).length}/{product.qcChecklist.length} Passed)
+                  </h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                    {product.qcChecklist.map((c, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: c.passed ? '#14532d' : '#991b1b' }}>
+                        <span style={{ color: c.passed ? '#16a34a' : '#dc2626', fontWeight: 'bold' }}>
+                          {c.passed ? '✓' : '✗'}
+                        </span>
+                        <span>{c.item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           <hr style={{ margin: '1rem 0', borderColor: '#EEE' }} />
 
           {/* Specifications list */}

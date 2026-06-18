@@ -42,3 +42,6 @@ export const validateCoupon      = (data)   => API.post('/coupons/validate', dat
 export const createRazorpayOrder = (amount) => API.post('/payment/razorpay/create-order', { amount });
 export const verifyRazorpayPayment = (data) => API.post('/payment/razorpay/verify', data);
 export const downloadInvoice     = (orderId)=> API.get(`/orders/${orderId}/invoice`, { responseType: 'blob' });
+export const markOrderAsRefurbished = (orderId, data) => API.put(`/orders/${orderId}/refurbish`, data);
+export const getRefurbishedProducts = ()    => API.get('/products/refurbished');
+

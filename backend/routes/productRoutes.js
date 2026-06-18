@@ -10,12 +10,14 @@ const {
   updateProduct,
   deleteProduct,
   getRecommendations,
+  getRefurbishedProducts,
 } = require('../controllers/ProductController');
 const verifyToken = require('../middleware/verifyToken');
 const isVendor = require('../middleware/isVendor');
 
 router.get('/', getProducts);
 router.get('/recommendations', getRecommendations);
+router.get('/refurbished', getRefurbishedProducts);
 router.get('/:id', getProductById);
 
 router.post('/', verifyToken, isVendor, upload.array('images', 5), createProduct);

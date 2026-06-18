@@ -64,6 +64,7 @@ const orderSchema = new mongoose.Schema(
     returnReason: String,
     returnType: { type: String, enum: ['refund', 'replacement'], default: 'refund' },
     vendorReply: String,
+    refurbishedProductId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
   },
   { timestamps: true }
 );

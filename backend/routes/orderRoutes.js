@@ -10,6 +10,7 @@ const {
   replyToReturn,
   approveReturn,
   rejectReturn,
+  markAsRefurbished,
 } = require('../controllers/OrderController');
 const verifyToken = require('../middleware/verifyToken');
 const isVendor = require('../middleware/isVendor');
@@ -27,5 +28,6 @@ router.post('/:id/return', requestReturn);
 router.post('/:id/vendor-reply', isVendor, replyToReturn);
 router.put('/:id/approve-return', isVendor, approveReturn);
 router.put('/:id/reject-return', isVendor, rejectReturn);
+router.put('/:id/refurbish', isVendor, markAsRefurbished);
 
 module.exports = router;

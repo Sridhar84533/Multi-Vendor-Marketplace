@@ -24,6 +24,25 @@ const ProductCard = ({ product, onCompare, isComparing }) => {
   return (
     <div className="product-card" style={{ opacity: isOutOfStock ? 0.85 : 1 }}>
       <Link to={`/products/${product._id}`} style={{ position: 'relative', display: 'block' }}>
+        {product.isRefurbished && (
+          <div style={{
+            position: 'absolute',
+            top: '8px',
+            left: '8px',
+            background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
+            color: '#fff',
+            fontWeight: 800,
+            fontSize: '0.68rem',
+            letterSpacing: '0.04em',
+            padding: '3px 8px',
+            borderRadius: '12px',
+            boxShadow: '0 2px 6px rgba(13,148,136,0.3)',
+            zIndex: 1,
+            textTransform: 'uppercase',
+          }}>
+            Refurbished ({product.refurbishedCondition})
+          </div>
+        )}
         <img
           src={imgUrl}
           alt={product.title || 'Product'}

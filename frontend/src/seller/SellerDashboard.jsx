@@ -363,6 +363,7 @@ const SellerDashboard = () => {
           { icon: <LayoutDashboard size={17} />, label: 'Dashboard', path: '/seller' },
           { icon: <PlusCircle size={17} />, label: 'Add Product', path: '/seller/add-product' },
           { icon: <ShoppingBag size={17} />, label: 'Manage Inventory', path: '/seller/manage-products' },
+          { icon: <RotateCcw size={17} />, label: 'Refurbish Returns', path: '/seller/refurbished-orders' },
         ].map(({ icon, label, path }) => (
           <button
             key={path}

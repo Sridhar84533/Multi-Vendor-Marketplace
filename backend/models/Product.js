@@ -35,6 +35,23 @@ const productSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true },
     specifications: [{ key: String, value: String }],
     returnPolicy: { type: String, default: '7 days return policy' },
+
+    // ── Refurbished fields ─────────────────────────────────────────────────
+    isRefurbished: { type: Boolean, default: false },
+    refurbishedDiscount: { type: Number, default: 0, min: 0, max: 100 },
+    refurbishedCondition: {
+      type: String,
+      enum: ['Like New', 'Good', 'Fair'],
+      default: 'Good',
+    },
+    refurbishedNotes: { type: String },
+    qcStatus: {
+      type: String,
+      enum: ['Pending', 'Testing', 'Passed', 'Failed'],
+      default: 'Pending',
+    },
+    qcChecklist: [{ item: { type: String }, passed: { type: Boolean, default: false } }],
+    sourceOrderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
   },
   { timestamps: true }
 );

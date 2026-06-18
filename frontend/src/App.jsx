@@ -28,6 +28,10 @@ import SellerDashboard from './seller/SellerDashboard';
 import AddProduct from './seller/AddProduct';
 import ManageProducts from './seller/ManageProducts';
 import EditProduct from './seller/EditProduct';
+import RefurbishedOrders from './seller/RefurbishedOrders';
+
+// Refurbished Pages
+import Refurbished from './pages/Refurbished';
 
 // Admin Pages
 import AdminDashboard from './admin/AdminDashboard';
@@ -103,6 +107,7 @@ function AppLayout() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/products/:id" element={<ProductDetails />} />
+                <Route path="/refurbished" element={<Refurbished />} />
 
                 {/* Customer */}
                 <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
@@ -119,6 +124,7 @@ function AppLayout() {
                 <Route path="/seller/add-product" element={<VendorRoute><AddProduct /></VendorRoute>} />
                 <Route path="/seller/manage-products" element={<VendorRoute><ManageProducts /></VendorRoute>} />
                 <Route path="/seller/edit-product/:id" element={<VendorRoute><EditProduct /></VendorRoute>} />
+                <Route path="/seller/refurbished-orders" element={<VendorRoute><RefurbishedOrders /></VendorRoute>} />
 
                 {/* 404 */}
                 <Route path="*" element={<NotFound />} />

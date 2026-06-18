@@ -360,6 +360,88 @@ exports.replyToReturn = async (req, res) => {
   }
 };
 
+// Helper function to generate QC Checklist dynamically based on product specifications & category
+const generateQCChecklist = (product) => {
+  const checklist = [];
+  const specs = product.specifications || [];
+  const category = (product.category || '').toLowerCase();
+  const title = (product.title || '').toLowerCase();
+
+  // 1. Check if it's an electronic device
+  const isElectronic = 
+    category.includes('electronic') || 
+    category.includes('phone') || 
+    category.includes('mobile') || 
+    category.includes('laptop') || 
+    category.includes('computer') || 
+    category.includes('tablet') || 
+    category.includes('camera') ||
+    title.includes('phone') || 
+    title.includes('laptop') || 
+    title.includes('watch') || 
+    title.includes('earphone') || 
+    title.includes('headphone');
+
+  // 2. Check if it's a racket / sports item
+  const isRacket = title.includes('racket') || title.includes('bat') || category.includes('sport');
+
+  // Let's add specification-specific checks first
+  specs.forEach(spec => {
+    const key = (spec.key || '').trim();
+    const val = (spec.value || '').trim();
+    if (!key || !val) return;
+
+    if (key.toLowerCase().includes('battery') || key.toLowerCase().includes('capacity')) {
+      checklist.push({ item: `Battery & Charging (${val})`, passed: false });
+    } else if (key.toLowerCase().includes('screen') || key.toLowerCase().includes('display') || key.toLowerCase().includes('resolution')) {
+      checklist.push({ item: `Display / Screen (${val})`, passed: false });
+    } else if (key.toLowerCase().includes('camera') || key.toLowerCase().includes('sensor')) {
+      checklist.push({ item: `Camera / Lens (${val})`, passed: false });
+    } else if (key.toLowerCase().includes('material')) {
+      checklist.push({ item: `Material & Structure (${val})`, passed: false });
+    } else if (key.toLowerCase().includes('weight') || key.toLowerCase().includes('balance')) {
+      checklist.push({ item: `Weight & Balance Verification (${val})`, passed: false });
+    } else if (key.toLowerCase().includes('tension') || key.toLowerCase().includes('string')) {
+      checklist.push({ item: `String / Wire Tension (${val})`, passed: false });
+    } else if (key.toLowerCase().includes('grip') || key.toLowerCase().includes('handle')) {
+      checklist.push({ item: `Handle & Grip Wrap (${val})`, passed: false });
+    } else if (key.toLowerCase().includes('size') || key.toLowerCase().includes('dimension')) {
+      checklist.push({ item: `Size / Dimensions Verification (${val})`, passed: false });
+    } else {
+      checklist.push({ item: `Verify ${key}: ${val}`, passed: false });
+    }
+  });
+
+  const hasItem = (name) => checklist.some(c => c.item.toLowerCase().includes(name.toLowerCase()));
+
+  // 3. Fallback / generic checks based on type if not already added
+  if (isElectronic) {
+    if (!hasItem('Display')) checklist.push({ item: 'Display / Screen Check', passed: false });
+    if (!hasItem('Battery')) checklist.push({ item: 'Battery & Charging Diagnostics', passed: false });
+    if (!hasItem('Camera')) checklist.push({ item: 'Camera (Front & Rear) Check', passed: false });
+    if (!hasItem('Speaker') && !hasItem('Audio')) checklist.push({ item: 'Speakers & Microphone Check', passed: false });
+    checklist.push({ item: 'All Buttons & Ports Operational', passed: false });
+    checklist.push({ item: 'Software / OS Reset & Check', passed: false });
+    checklist.push({ item: 'Physical Body / Frame Scratch Check', passed: false });
+  } else if (isRacket) {
+    if (!hasItem('Material')) checklist.push({ item: 'Frame Material structural integrity', passed: false });
+    if (!hasItem('Tension')) checklist.push({ item: 'String Tension & alignment', passed: false });
+    if (!hasItem('Grip')) checklist.push({ item: 'Grip Wrap & Handle check', passed: false });
+    if (!hasItem('Weight')) checklist.push({ item: 'Weight & Balance alignment', passed: false });
+    checklist.push({ item: 'Physical Body / Paint Scratches Check', passed: false });
+  } else {
+    // Generic product checks
+    if (!hasItem('Material')) checklist.push({ item: 'Material structural check', passed: false });
+    if (!hasItem('Size')) checklist.push({ item: 'Dimensions & Alignment check', passed: false });
+    checklist.push({ item: 'Physical Body & Aesthetic integrity', passed: false });
+  }
+
+  // Always check accessories
+  checklist.push({ item: 'Accessories Included Verification', passed: false });
+
+  return checklist;
+};
+
 // @PUT /api/orders/:id/approve-return
 exports.approveReturn = async (req, res) => {
   try {
@@ -411,16 +493,7 @@ exports.approveReturn = async (req, res) => {
             refurbishedCondition: 'Good',
             refurbishedNotes: '',
             qcStatus: 'Pending',
-            qcChecklist: [
-              { item: 'Display / Screen', passed: false },
-              { item: 'Battery & Charging', passed: false },
-              { item: 'Camera (Front & Rear)', passed: false },
-              { item: 'Speakers & Microphone', passed: false },
-              { item: 'Physical Body / Frame', passed: false },
-              { item: 'All Buttons & Ports', passed: false },
-              { item: 'Software / OS', passed: false },
-              { item: 'Accessories Included', passed: false },
-            ],
+            qcChecklist: generateQCChecklist(sourceProduct),
             sourceOrderId: order._id,
           });
           order.refurbishedProductId = newProduct._id;

@@ -80,12 +80,29 @@ export default function RefurbishedOrders() {
 
   const toggleExpand = (id) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
 
-  const getForm = (id) => forms[id] || {
-    refurbishedDiscount: 20,
-    refurbishedCondition: 'Good',
-    refurbishedNotes: '',
-    qcStatus: 'Passed',
-    qcChecklist: QC_ITEMS.map(item => ({ item, passed: true })),
+  const getForm = (id) => {
+    if (forms[id]) return forms[id];
+
+    const order = returnOrders.find(o => o._id === id) || doneOrders.find(o => o._id === id);
+    const placeholderList = order?.refurbishedProductId?.qcChecklist;
+
+    if (placeholderList && placeholderList.length > 0) {
+      return {
+        refurbishedDiscount: 20,
+        refurbishedCondition: 'Good',
+        refurbishedNotes: '',
+        qcStatus: 'Passed',
+        qcChecklist: placeholderList.map(c => ({ item: c.item, passed: true })),
+      };
+    }
+
+    return {
+      refurbishedDiscount: 20,
+      refurbishedCondition: 'Good',
+      refurbishedNotes: '',
+      qcStatus: 'Passed',
+      qcChecklist: QC_ITEMS.map(item => ({ item, passed: true })),
+    };
   };
 
   const updateForm = (id, field, value) =>

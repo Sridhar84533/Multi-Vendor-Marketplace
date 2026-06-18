@@ -324,11 +324,35 @@ const ProductDetails = () => {
           <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '1.5rem' }}>Customers also bought</h2>
           <div style={{ display: 'flex', gap: '1.5rem', overflowX: 'auto' }}>
             {similarProducts.map((sim) => (
-              <div key={sim._id} style={{ minWidth: '200px', width: '200px', border: '1px solid #EEE', padding: '0.8rem' }}>
-                <img src={sim.images?.[0]?.url} alt={sim.title} style={{ width: '100%', height: '140px', objectFit: 'contain' }} />
-                <h4 style={{ fontSize: '0.85rem', fontWeight: 600, height: '2.5rem', overflow: 'hidden', marginTop: '0.5rem' }}>{sim.title}</h4>
-                <span style={{ fontSize: '1.1rem', fontWeight: 700, marginTop: '0.5rem', display: 'block' }}>Rs. {sim.price}</span>
-              </div>
+              <Link
+                key={sim._id}
+                to={`/products/${sim._id}`}
+                style={{
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  minWidth: '200px',
+                  width: '200px',
+                  border: '1px solid #EEE',
+                  padding: '0.8rem',
+                  borderRadius: '4px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'transform 0.15s, box-shadow 0.15s',
+                  backgroundColor: '#FFF',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.06)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'none';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <img src={sim.images?.[0]?.url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500'} alt={sim.title} style={{ width: '100%', height: '140px', objectFit: 'contain' }} />
+                <h4 style={{ fontSize: '0.85rem', fontWeight: 600, height: '2.5rem', overflow: 'hidden', marginTop: '0.5rem', color: '#007185' }}>{sim.title}</h4>
+                <span style={{ fontSize: '1.1rem', fontWeight: 700, marginTop: '0.5rem', display: 'block', color: 'var(--text)' }}>Rs. {sim.price}</span>
+              </Link>
             ))}
           </div>
         </section>

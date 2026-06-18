@@ -186,6 +186,25 @@ exports.getMyOrders = async (req, res) => {
   }
 };
 
+// @GET /api/orders/vendor
+// Get all orders containing items from this vendor
+exports.getVendorOrders = async (req, res) => {
+  try {
+    const vendor = await Vendor.findOne({ user: req.user._id });
+    if (!vendor) return res.status(403).json({ message: 'Vendor profile not found' });
+
+    const orders = await Order.find({ 'items.vendor': vendor._id })
+      .populate('user', 'name email')
+      .populate('items.product')
+      .populate('refurbishedProductId')
+      .sort({ createdAt: -1 });
+
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // @GET /api/orders/:id
 exports.getOrderById = async (req, res) => {
   try {
@@ -365,6 +384,52 @@ exports.approveReturn = async (req, res) => {
         : `Your replacement request has been approved. A replacement product will be shipped soon.`,
     });
 
+    // Automatically create a Refurbished listing awaiting cross-check/testing
+    try {
+      const sourceItem = order.items[0];
+      if (sourceItem && sourceItem.product) {
+        const sourceProduct = await Product.findById(sourceItem.product);
+        if (sourceProduct) {
+          const newProduct = await Product.create({
+            vendor: sourceItem.vendor || sourceProduct.vendor,
+            title: `[Refurbished] ${sourceProduct.title}`,
+            description: sourceProduct.description,
+            shortDescription: sourceProduct.shortDescription,
+            category: sourceProduct.category,
+            subCategory: sourceProduct.subCategory,
+            brand: sourceProduct.brand,
+            images: sourceProduct.images,
+            price: sourceProduct.discountPrice || sourceProduct.price,
+            discountPercent: 0,
+            stock: sourceItem.quantity,
+            sku: sourceProduct.sku ? `${sourceProduct.sku}-REFURB` : undefined,
+            tags: [...(sourceProduct.tags || []), 'refurbished'],
+            specifications: sourceProduct.specifications,
+            returnPolicy: 'No return on refurbished products',
+            isRefurbished: true,
+            isActive: false, // Must be cross-checked / validated before being listed for sale
+            refurbishedCondition: 'Good',
+            refurbishedNotes: '',
+            qcStatus: 'Pending',
+            qcChecklist: [
+              { item: 'Display / Screen', passed: false },
+              { item: 'Battery & Charging', passed: false },
+              { item: 'Camera (Front & Rear)', passed: false },
+              { item: 'Speakers & Microphone', passed: false },
+              { item: 'Physical Body / Frame', passed: false },
+              { item: 'All Buttons & Ports', passed: false },
+              { item: 'Software / OS', passed: false },
+              { item: 'Accessories Included', passed: false },
+            ],
+            sourceOrderId: order._id,
+          });
+          order.refurbishedProductId = newProduct._id;
+        }
+      }
+    } catch (errCloning) {
+      console.error('Failed to automatically create refurbished listing placeholder:', errCloning);
+    }
+
     await order.save();
     res.json(order);
 
@@ -438,14 +503,18 @@ exports.markAsRefurbished = async (req, res) => {
     if (!['Return Approved', 'Refunded'].includes(order.status)) {
       return res.status(400).json({ message: 'Order must be in Return Approved or Refunded status to mark as refurbished' });
     }
+
+    let refurbishedProduct = null;
     if (order.refurbishedProductId) {
-      return res.status(400).json({ message: 'This return has already been processed as a refurbished product' });
+      refurbishedProduct = await Product.findById(order.refurbishedProductId);
+      if (refurbishedProduct && refurbishedProduct.isActive) {
+        return res.status(400).json({ message: 'This return has already been processed and listed as a refurbished product' });
+      }
     }
 
     const vendor = await Vendor.findOne({ user: req.user._id });
     if (!vendor) return res.status(403).json({ message: 'Vendor profile not found' });
 
-    // Use the first item of the order as the product to refurbish
     const sourceItem = order.items[0];
     const sourceProduct = await Product.findById(sourceItem.product);
     if (!sourceProduct) return res.status(404).json({ message: 'Source product not found' });
@@ -454,38 +523,53 @@ exports.markAsRefurbished = async (req, res) => {
     const discountPct = Number(refurbishedDiscount) || 0;
     const refurbishedPrice = Math.round(originalPrice * (1 - discountPct / 100));
 
-    // Clone the original product as a new refurbished listing
-    const newProduct = await Product.create({
-      vendor: vendor._id,
-      title: `[Refurbished] ${sourceProduct.title}`,
-      description: sourceProduct.description,
-      shortDescription: sourceProduct.shortDescription,
-      category: sourceProduct.category,
-      subCategory: sourceProduct.subCategory,
-      brand: sourceProduct.brand,
-      images: sourceProduct.images,
-      price: originalPrice,
-      discountPrice: refurbishedPrice < originalPrice ? refurbishedPrice : undefined,
-      discountPercent: discountPct,
-      stock: sourceItem.quantity,
-      sku: sourceProduct.sku ? `${sourceProduct.sku}-REFURB` : undefined,
-      tags: [...(sourceProduct.tags || []), 'refurbished'],
-      specifications: sourceProduct.specifications,
-      returnPolicy: 'No return on refurbished products',
-      isRefurbished: true,
-      refurbishedDiscount: discountPct,
-      refurbishedCondition: refurbishedCondition || 'Good',
-      refurbishedNotes: refurbishedNotes || '',
-      qcStatus: qcStatus || 'Passed',
-      qcChecklist: Array.isArray(qcChecklist) ? qcChecklist : [],
-      sourceOrderId: order._id,
-    });
+    if (!refurbishedProduct) {
+      // Clone the original product as a new refurbished listing (Fallback/Legacy)
+      refurbishedProduct = await Product.create({
+        vendor: vendor._id,
+        title: `[Refurbished] ${sourceProduct.title}`,
+        description: sourceProduct.description,
+        shortDescription: sourceProduct.shortDescription,
+        category: sourceProduct.category,
+        subCategory: sourceProduct.subCategory,
+        brand: sourceProduct.brand,
+        images: sourceProduct.images,
+        price: originalPrice,
+        discountPrice: refurbishedPrice < originalPrice ? refurbishedPrice : undefined,
+        discountPercent: discountPct,
+        stock: sourceItem.quantity,
+        sku: sourceProduct.sku ? `${sourceProduct.sku}-REFURB` : undefined,
+        tags: [...(sourceProduct.tags || []), 'refurbished'],
+        specifications: sourceProduct.specifications,
+        returnPolicy: 'No return on refurbished products',
+        isRefurbished: true,
+        refurbishedDiscount: discountPct,
+        refurbishedCondition: refurbishedCondition || 'Good',
+        refurbishedNotes: refurbishedNotes || '',
+        qcStatus: qcStatus || 'Passed',
+        qcChecklist: Array.isArray(qcChecklist) ? qcChecklist : [],
+        sourceOrderId: order._id,
+        isActive: qcStatus === 'Passed',
+      });
 
-    // Link the refurbished product back to the order
-    order.refurbishedProductId = newProduct._id;
-    await order.save();
+      // Link the refurbished product back to the order
+      order.refurbishedProductId = refurbishedProduct._id;
+      await order.save();
+    } else {
+      // Update the automatically created placeholder
+      refurbishedProduct.refurbishedDiscount = discountPct;
+      refurbishedProduct.discountPercent = discountPct;
+      refurbishedProduct.discountPrice = refurbishedPrice < originalPrice ? refurbishedPrice : undefined;
+      refurbishedProduct.refurbishedCondition = refurbishedCondition || 'Good';
+      refurbishedProduct.refurbishedNotes = refurbishedNotes || '';
+      refurbishedProduct.qcStatus = qcStatus || 'Passed';
+      refurbishedProduct.qcChecklist = Array.isArray(qcChecklist) ? qcChecklist : [];
+      refurbishedProduct.isActive = qcStatus === 'Passed'; // List for sale only if QC passed
 
-    res.status(201).json({ message: 'Product listed as refurbished successfully', product: newProduct });
+      await refurbishedProduct.save();
+    }
+
+    res.status(200).json({ message: 'Product listed as refurbished successfully', product: refurbishedProduct });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

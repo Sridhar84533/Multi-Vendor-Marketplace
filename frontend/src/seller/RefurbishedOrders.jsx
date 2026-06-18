@@ -55,10 +55,19 @@ export default function RefurbishedOrders() {
       try {
         const res = await API.get('/orders/vendor');
         const all = res.data || [];
-        setReturnOrders(all.filter(o =>
-          ['Return Approved', 'Refunded'].includes(o.status) && !o.refurbishedProductId
-        ));
-        setDoneOrders(all.filter(o => o.refurbishedProductId));
+        setReturnOrders(all.filter(o => {
+          if (!['Return Approved', 'Refunded'].includes(o.status)) return false;
+          const p = o.refurbishedProductId;
+          if (!p) return true;
+          if (typeof p === 'object' && (p.qcStatus === 'Pending' || p.isActive === false)) return true;
+          return false;
+        }));
+        setDoneOrders(all.filter(o => {
+          const p = o.refurbishedProductId;
+          if (!p) return false;
+          if (typeof p !== 'object') return true;
+          return p.qcStatus !== 'Pending' && p.isActive !== false;
+        }));
       } catch {
         setReturnOrders([]);
         setDoneOrders([]);
@@ -356,7 +365,7 @@ export default function RefurbishedOrders() {
                 </div>
                 {badge('✓ Refurbished', '#0d9488')}
                 <Link
-                  to={`/products/${order.refurbishedProductId}`}
+                  to={`/products/${order.refurbishedProductId?._id || order.refurbishedProductId}`}
                   style={{ fontSize: '0.78rem', color: '#0d9488', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}
                 >
                   View Listing →

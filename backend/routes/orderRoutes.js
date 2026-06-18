@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   createOrder,
   getMyOrders,
+  getVendorOrders,
   getOrderById,
   updateOrderStatus,
   downloadInvoice,
@@ -21,6 +22,7 @@ router.route('/')
   .post(createOrder)
   .get(getMyOrders);
 
+router.get('/vendor', isVendor, getVendorOrders);
 router.get('/:id', getOrderById);
 router.put('/:id/status', isVendor, updateOrderStatus);
 router.get('/:id/invoice', downloadInvoice);

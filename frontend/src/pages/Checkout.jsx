@@ -1,52 +1,18 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { clearCart } from '../redux/cartSlice';
 import API, { validateCoupon, createRazorpayOrder, verifyRazorpayPayment } from '../services/api';
-import { CreditCard, Truck, Award, X, Smartphone, Lock } from 'lucide-react';
+import { CreditCard, Truck, Award, Smartphone, Lock } from 'lucide-react';
 
-/* ─── Inline styles for the mock payment modal ─── */
-const modalOverlayStyle = {
-  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
-  zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center',
-  padding: '1rem',
+const inlineInputStyle = {
+  width: '100%', padding: '0.65rem 0.8rem', border: '1px solid #ddd',
+  borderRadius: '6px', fontSize: '0.9rem', boxSizing: 'border-box',
+  outline: 'none', transition: 'border 0.2s',
 };
-const modalBoxStyle = {
-  background: '#fff', borderRadius: '8px', width: '100%', maxWidth: '440px',
-  boxShadow: '0 8px 32px rgba(0,0,0,0.25)', overflow: 'hidden',
-};
-const modalHeaderStyle = {
-  background: '#0d1b2a', color: '#fff', padding: '1rem 1.2rem',
-  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-};
-const tabStyle = (active) => ({
-  flex: 1, padding: '0.6rem', border: 'none', cursor: 'pointer',
-  background: active ? '#fff' : '#f0f0f0',
-  borderBottom: active ? '2px solid #0d1b2a' : '2px solid transparent',
-  fontWeight: active ? 700 : 500, fontSize: '0.9rem',
-  transition: 'all 0.2s',
-});
-const inputStyle = {
-  width: '100%', padding: '0.65rem 0.8rem', border: '1px solid #ccc',
-  borderRadius: '4px', fontSize: '0.9rem', boxSizing: 'border-box',
-  marginTop: '4px',
-};
-const payBtnStyle = (processing) => ({
-  width: '100%', padding: '0.8rem', marginTop: '1.2rem',
-  background: processing ? '#555' : '#0d1b2a', color: '#fff',
-  border: 'none', borderRadius: '4px', cursor: processing ? 'not-allowed' : 'pointer',
-  fontWeight: 700, fontSize: '1rem', display: 'flex', alignItems: 'center',
-  justifyContent: 'center', gap: '8px',
-});
 
-/* ─── Mock Payment Modal Component ─── */
-const MockPaymentModal = ({ amount, onSuccess, onClose }) => {
-  const [tab, setTab] = useState('card');
-  const [processing, setProcessing] = useState(false);
-  const [card, setCard] = useState({ number: '', expiry: '', cvv: '', name: '' });
-  const [upiId, setUpiId] = useState('');
-  const [error, setError] = useState('');
-
+/* ─── Inline Online Payment Form ─── */
+const InlinePaymentForm = ({ payTab, setPayTab, card, setCard, upiId, setUpiId, payError }) => {
   const formatCard = (val) =>
     val.replace(/\D/g, '').substring(0, 16).replace(/(.{4})/g, '$1 ').trim();
   const formatExpiry = (val) => {
@@ -54,138 +20,106 @@ const MockPaymentModal = ({ amount, onSuccess, onClose }) => {
     return digits.length > 2 ? digits.slice(0, 2) + '/' + digits.slice(2) : digits;
   };
 
-  const handlePay = async () => {
-    setError('');
-    if (tab === 'card') {
-      const digits = card.number.replace(/\s/g, '');
-      if (digits.length < 16) return setError('Enter a valid 16-digit card number.');
-      if (!card.expiry || card.expiry.length < 5) return setError('Enter a valid expiry date (MM/YY).');
-      if (!card.cvv || card.cvv.length < 3) return setError('Enter a valid CVV.');
-      if (!card.name.trim()) return setError('Enter the name on card.');
-    } else {
-      if (!upiId.includes('@')) return setError('Enter a valid UPI ID (e.g. name@upi).');
-    }
-    setProcessing(true);
-    // Simulate network delay
-    await new Promise((r) => setTimeout(r, 1500));
-    setProcessing(false);
-    onSuccess();
-  };
+  const tabBtnStyle = (active) => ({
+    flex: 1, padding: '0.55rem 0.5rem', border: 'none', cursor: 'pointer',
+    background: active ? '#0d1b2a' : '#f4f4f4',
+    color: active ? '#fff' : '#555',
+    borderRadius: active ? '6px' : '6px',
+    fontWeight: active ? 700 : 500, fontSize: '0.85rem',
+    transition: 'all 0.2s', display: 'flex', alignItems: 'center',
+    justifyContent: 'center', gap: '6px',
+  });
 
   return (
-    <div style={modalOverlayStyle} onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div style={modalBoxStyle}>
-        {/* Header */}
-        <div style={modalHeaderStyle}>
+    <div style={{ marginTop: '1rem', background: '#f9f9fb', border: '1px solid #e0e0e0', borderRadius: '8px', padding: '1rem', animation: 'fadeSlideIn 0.2s ease' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '0.8rem', fontSize: '0.82rem', color: '#555' }}>
+        <Lock size={13} color="#27ae60" />
+        <span>Secured — Visa, Mastercard, RuPay, UPI</span>
+      </div>
+
+      {/* Sub-tabs: Card / UPI */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '1rem', background: '#eee', borderRadius: '8px', padding: '4px' }}>
+        <button style={tabBtnStyle(payTab === 'card')} onClick={() => setPayTab('card')}>
+          <CreditCard size={14} /> Card
+        </button>
+        <button style={tabBtnStyle(payTab === 'upi')} onClick={() => setPayTab('upi')}>
+          <Smartphone size={14} /> UPI
+        </button>
+      </div>
+
+      {payTab === 'card' ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
           <div>
-            <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>Secure Payment</div>
-            <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>Rs. {amount.toFixed(2)}</div>
+            <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#444', display: 'block', marginBottom: '3px' }}>Card Number</label>
+            <input
+              style={inlineInputStyle}
+              type="text"
+              placeholder="4242 4242 4242 4242"
+              value={card.number}
+              onChange={(e) => setCard({ ...card, number: formatCard(e.target.value) })}
+              maxLength={19}
+            />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Lock size={16} color="#aaa" />
-            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff' }}>
-              <X size={20} />
-            </button>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #ddd' }}>
-          <button style={tabStyle(tab === 'card')} onClick={() => setTab('card')}>
-            <CreditCard size={14} style={{ marginRight: 4 }} /> Card
-          </button>
-          <button style={tabStyle(tab === 'upi')} onClick={() => setTab('upi')}>
-            <Smartphone size={14} style={{ marginRight: 4 }} /> UPI
-          </button>
-        </div>
-
-        <div style={{ padding: '1.2rem' }}>
-          {tab === 'card' ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
-              <div>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#444' }}>Card Number</label>
-                <input
-                  style={inputStyle}
-                  type="text"
-                  placeholder="4242 4242 4242 4242"
-                  value={card.number}
-                  onChange={(e) => setCard({ ...card, number: formatCard(e.target.value) })}
-                  maxLength={19}
-                />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.7rem' }}>
-                <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#444' }}>Expiry (MM/YY)</label>
-                  <input
-                    style={inputStyle}
-                    type="text"
-                    placeholder="12/27"
-                    value={card.expiry}
-                    onChange={(e) => setCard({ ...card, expiry: formatExpiry(e.target.value) })}
-                    maxLength={5}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#444' }}>CVV</label>
-                  <input
-                    style={inputStyle}
-                    type="password"
-                    placeholder="•••"
-                    value={card.cvv}
-                    onChange={(e) => setCard({ ...card, cvv: e.target.value.replace(/\D/g, '').substring(0, 4) })}
-                    maxLength={4}
-                  />
-                </div>
-              </div>
-              <div>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#444' }}>Name on Card</label>
-                <input
-                  style={inputStyle}
-                  type="text"
-                  placeholder="Your Name"
-                  value={card.name}
-                  onChange={(e) => setCard({ ...card, name: e.target.value })}
-                />
-              </div>
-            </div>
-          ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
             <div>
-              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#444' }}>UPI ID</label>
+              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#444', display: 'block', marginBottom: '3px' }}>Expiry (MM/YY)</label>
               <input
-                style={inputStyle}
+                style={inlineInputStyle}
                 type="text"
-                placeholder="yourname@upi"
-                value={upiId}
-                onChange={(e) => setUpiId(e.target.value)}
+                placeholder="12/27"
+                value={card.expiry}
+                onChange={(e) => setCard({ ...card, expiry: formatExpiry(e.target.value) })}
+                maxLength={5}
               />
-              <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '6px' }}>
-                e.g. yourname@okaxis, yourname@paytm, yourname@ybl
-              </p>
             </div>
-          )}
-
-          {error && (
-            <p style={{ color: '#c0392b', fontSize: '0.8rem', marginTop: '0.5rem', padding: '0.5rem', background: '#fdf0ed', borderRadius: '4px' }}>
-              ⚠️ {error}
-            </p>
-          )}
-
-          <button style={payBtnStyle(processing)} onClick={handlePay} disabled={processing}>
-            {processing ? (
-              <>
-                <span style={{ width: 16, height: 16, border: '2px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />
-                Processing…
-              </>
-            ) : (
-              <>Pay Rs. {amount.toFixed(2)}</>
-            )}
-          </button>
-
-          <p style={{ textAlign: 'center', fontSize: '0.72rem', color: '#999', marginTop: '0.8rem' }}>
-            🔒 Test mode — no real money is charged
+            <div>
+              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#444', display: 'block', marginBottom: '3px' }}>CVV</label>
+              <input
+                style={inlineInputStyle}
+                type="password"
+                placeholder="•••"
+                value={card.cvv}
+                onChange={(e) => setCard({ ...card, cvv: e.target.value.replace(/\D/g, '').substring(0, 4) })}
+                maxLength={4}
+              />
+            </div>
+          </div>
+          <div>
+            <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#444', display: 'block', marginBottom: '3px' }}>Name on Card</label>
+            <input
+              style={inlineInputStyle}
+              type="text"
+              placeholder="Your Name"
+              value={card.name}
+              onChange={(e) => setCard({ ...card, name: e.target.value })}
+            />
+          </div>
+        </div>
+      ) : (
+        <div>
+          <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#444', display: 'block', marginBottom: '3px' }}>UPI ID</label>
+          <input
+            style={inlineInputStyle}
+            type="text"
+            placeholder="yourname@upi"
+            value={upiId}
+            onChange={(e) => setUpiId(e.target.value)}
+          />
+          <p style={{ fontSize: '0.74rem', color: '#888', marginTop: '5px' }}>
+            e.g. yourname@okaxis, yourname@paytm, yourname@ybl
           </p>
         </div>
-      </div>
+      )}
+
+      {payError && (
+        <p style={{ color: '#c0392b', fontSize: '0.8rem', marginTop: '0.5rem', padding: '0.45rem 0.6rem', background: '#fdf0ed', borderRadius: '4px' }}>
+          ⚠️ {payError}
+        </p>
+      )}
+
+      <p style={{ fontSize: '0.72rem', color: '#27ae60', marginTop: '0.7rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+        🔒 Test mode — no real money is charged
+      </p>
     </div>
   );
 };
@@ -201,10 +135,13 @@ const Checkout = () => {
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('cod');
-  const [showMockModal, setShowMockModal] = useState(false);
-  // Use refs so the modal callback always reads the latest value (avoids stale closure)
-  const pendingOrderDataRef = useRef(null);
-  const pendingRzpOrderIdRef = useRef(null);
+
+  // Inline payment form state
+  const [payTab, setPayTab] = useState('card');
+  const [card, setCard] = useState({ number: '', expiry: '', cvv: '', name: '' });
+  const [upiId, setUpiId] = useState('');
+  const [payError, setPayError] = useState('');
+  const [orderError, setOrderError] = useState('');
 
   // Coupon states
   const [couponCode, setCouponCode] = useState('');
@@ -279,61 +216,68 @@ const Checkout = () => {
     paymentMethod,
   }), [items, user, selectedAddress, subtotal, shippingFee, tax, discount, loyaltyPointsUsed, walletAmountUsed, total, couponCode, paymentMethod]);
 
-  /* Called after successful mock payment */
-  const handleMockPaymentSuccess = async () => {
-    setShowMockModal(false);
-    setPlacing(true);
-    try {
-      const orderData = pendingOrderDataRef.current;
-      const rzpOrderId = pendingRzpOrderIdRef.current;
-      if (!orderData) throw new Error('Order data missing. Please try again.');
-      const res = await API.post('/orders', orderData);
-      // Verify with mock payment IDs
-      await verifyRazorpayPayment({
-        razorpay_order_id: rzpOrderId,
-        razorpay_payment_id: 'mock_pay_' + Math.random().toString(36).substr(2, 9),
-        razorpay_signature: 'mock_sig',
-        orderId: res.data._id,
-      });
-      dispatch(clearCart());
-      navigate(`/order-success/${res.data._id}`);
-    } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Failed to place order. Please try again.');
-    } finally {
-      setPlacing(false);
+  /* Validate inline payment form before submitting */
+  const validateInlinePayment = () => {
+    setPayError('');
+    if (payTab === 'card') {
+      const digits = card.number.replace(/\s/g, '');
+      if (digits.length < 16) { setPayError('Enter a valid 16-digit card number.'); return false; }
+      if (!card.expiry || card.expiry.length < 5) { setPayError('Enter a valid expiry (MM/YY).'); return false; }
+      if (!card.cvv || card.cvv.length < 3) { setPayError('Enter a valid CVV.'); return false; }
+      if (!card.name.trim()) { setPayError('Enter the name on card.'); return false; }
+    } else {
+      if (!upiId.includes('@')) { setPayError('Enter a valid UPI ID (e.g. name@upi).'); return false; }
     }
+    return true;
   };
 
   const handlePlaceOrder = async () => {
     if (!selectedAddress) {
-      alert('Please select or add a shipping address.');
+      setOrderError('Please select or add a shipping address.');
       return;
     }
     if (items.length === 0) {
-      alert('Your cart is empty.');
+      setOrderError('Your cart is empty.');
       return;
     }
+    // Validate inline card/UPI details before hitting the API
+    if (paymentMethod === 'razorpay' && !validateInlinePayment()) return;
 
     setPlacing(true);
+    setOrderError('');
+    setPayError('');
+
     try {
       const orderData = buildOrderData();
 
       if (paymentMethod === 'razorpay' && total > 0) {
-        // Create Razorpay order on backend
-        const orderRes = await createRazorpayOrder(total);
-        // Store in refs (synchronous, no stale-closure issue)
-        pendingRzpOrderIdRef.current = orderRes.data.id;
-        pendingOrderDataRef.current = orderData;
+        // ── Step 1: Create Razorpay order on backend ──────────────────────
+        let rzpData;
+        try {
+          const orderRes = await createRazorpayOrder(total);
+          rzpData = orderRes.data;
+        } catch (err) {
+          setPayError(err.response?.data?.message || 'Failed to initiate payment. Please try again.');
+          setPlacing(false);
+          return;
+        }
 
-        if (window.Razorpay && !orderRes.data.id?.startsWith('mock_')) {
-          // Real Razorpay flow
+        const rzpOrderId = rzpData?.id;
+        // isMock = true when backend has no real Razorpay keys (returns mock_... ID)
+        const isMock = !rzpOrderId || rzpOrderId.startsWith('mock_');
+        // Only open real Razorpay modal when key starts with 'rzp_'
+        const hasRealKey = typeof import.meta.env.VITE_RAZORPAY_KEY_ID === 'string'
+          && import.meta.env.VITE_RAZORPAY_KEY_ID.startsWith('rzp_');
+
+        if (!isMock && window.Razorpay && hasRealKey) {
+          // ── Real Razorpay checkout ───────────────────────────────────────
           const options = {
-            key: import.meta.env.VITE_RAZORPAY_KEY_ID || '',
-            amount: orderRes.data.amount,
-            currency: orderRes.data.currency,
+            key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+            amount: rzpData.amount,
+            currency: rzpData.currency || 'INR',
             name: 'Multi-Vendor Marketplace',
             description: 'Payment for your order',
-            order_id: orderRes.data.id,
+            order_id: rzpOrderId,
             handler: async (response) => {
               try {
                 const res = await API.post('/orders', orderData);
@@ -346,44 +290,50 @@ const Checkout = () => {
                 dispatch(clearCart());
                 navigate(`/order-success/${res.data._id}`);
               } catch (err) {
-                alert('Payment verification failed. Please contact support.');
+                setOrderError('Payment verification failed. Please contact support.');
+                setPlacing(false);
               }
             },
             prefill: { name: user.name, email: user.email },
             theme: { color: '#0d1b2a' },
-            modal: {
-              ondismiss: () => setPlacing(false),
-            },
+            modal: { ondismiss: () => setPlacing(false) },
           };
           setPlacing(false);
           new window.Razorpay(options).open();
         } else {
-          // Mock payment modal (test/dev mode)
-          setPlacing(false);
-          setShowMockModal(true);
+          // ── Mock / test mode (no real Razorpay keys configured) ──────────
+          await new Promise((r) => setTimeout(r, 1200)); // simulate gateway delay
+          const res = await API.post('/orders', orderData);
+          // Verification is non-blocking in mock mode — order succeeds regardless
+          try {
+            await verifyRazorpayPayment({
+              razorpay_order_id: rzpOrderId || 'mock_order',
+              razorpay_payment_id: 'mock_pay_' + Math.random().toString(36).substr(2, 9),
+              razorpay_signature: 'mock_sig',
+              orderId: res.data._id,
+            });
+          } catch (verifyErr) {
+            // Non-critical: order is already placed; payment status will remain Pending
+            console.warn('Mock payment verification skipped:', verifyErr.message);
+          }
+          dispatch(clearCart());
+          navigate(`/order-success/${res.data._id}`);
         }
       } else {
-        // COD flow
+        // ── COD flow (or total fully covered by wallet) ──────────────────
         const res = await API.post('/orders', orderData);
         dispatch(clearCart());
         navigate(`/order-success/${res.data._id}`);
       }
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || 'Failed to place order. Please try again.');
+      setOrderError(err.response?.data?.message || 'Failed to place order. Please try again.');
       setPlacing(false);
     }
   };
 
   return (
     <>
-      {showMockModal && (
-        <MockPaymentModal
-          amount={total}
-          onSuccess={handleMockPaymentSuccess}
-          onClose={() => { setShowMockModal(false); setPlacing(false); }}
-        />
-      )}
 
       <div className="container checkout-grid">
         <div>
@@ -442,28 +392,42 @@ const Checkout = () => {
                 { id: 'cod', label: 'Cash on Delivery (COD)', desc: 'Pay when you receive your order' },
                 { id: 'razorpay', label: 'Pay Online (Card / UPI / Net Banking)', desc: 'Secured by Razorpay — Visa, Mastercard, RuPay, UPI' },
               ].map((method) => (
-                <label
-                  key={method.id}
-                  style={{
-                    display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '0.9rem',
-                    border: paymentMethod === method.id ? '1px solid var(--primary)' : '1px solid #DDD',
-                    backgroundColor: paymentMethod === method.id ? '#FDF8F2' : '#FFF',
-                    borderRadius: '4px', cursor: 'pointer',
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name="payment"
-                    value={method.id}
-                    checked={paymentMethod === method.id}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    style={{ marginTop: '3px' }}
-                  />
-                  <div>
-                    <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>{method.label}</span>
-                    <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '2px' }}>{method.desc}</p>
-                  </div>
-                </label>
+                <div key={method.id}>
+                  <label
+                    style={{
+                      display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '0.9rem',
+                      border: paymentMethod === method.id ? '1px solid var(--primary)' : '1px solid #DDD',
+                      backgroundColor: paymentMethod === method.id ? '#FDF8F2' : '#FFF',
+                      borderRadius: '4px', cursor: 'pointer',
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="payment"
+                      value={method.id}
+                      checked={paymentMethod === method.id}
+                      onChange={(e) => { setPaymentMethod(e.target.value); setPayError(''); }}
+                      style={{ marginTop: '3px' }}
+                    />
+                    <div>
+                      <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>{method.label}</span>
+                      <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '2px' }}>{method.desc}</p>
+                    </div>
+                  </label>
+
+                  {/* Inline Card / UPI form — shown immediately when Pay Online is selected */}
+                  {method.id === 'razorpay' && paymentMethod === 'razorpay' && (
+                    <InlinePaymentForm
+                      payTab={payTab}
+                      setPayTab={setPayTab}
+                      card={card}
+                      setCard={setCard}
+                      upiId={upiId}
+                      setUpiId={setUpiId}
+                      payError={payError}
+                    />
+                  )}
+                </div>
               ))}
             </div>
           </section>
@@ -564,6 +528,18 @@ const Checkout = () => {
               )}
             </div>
 
+            {/* Inline order-level error banner */}
+            {orderError && (
+              <div style={{
+                background: '#fdf0ed', border: '1px solid #e74c3c', borderRadius: '6px',
+                padding: '0.65rem 0.8rem', marginBottom: '0.8rem',
+                fontSize: '0.83rem', color: '#c0392b',
+                display: 'flex', alignItems: 'flex-start', gap: '6px',
+              }}>
+                ⚠️ {orderError}
+              </div>
+            )}
+
             <button
               onClick={handlePlaceOrder}
               disabled={placing}
@@ -576,7 +552,7 @@ const Checkout = () => {
                   Processing…
                 </>
               ) : (
-                'Place your order'
+                paymentMethod === 'razorpay' ? '🔒 Pay & Place Order' : 'Place your order'
               )}
             </button>
 

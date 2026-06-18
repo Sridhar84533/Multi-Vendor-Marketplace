@@ -13,7 +13,15 @@ export const loadUser = createAsyncThunk('auth/loadUser', async (_, { rejectWith
 export const loginUser = createAsyncThunk('auth/loginUser', async (credentials, { rejectWithValue }) => {
   try {
     const res = await API.post('/auth/login', credentials);
-    localStorage.setItem('token', res.data.token);
+    const { token, user } = res.data;
+    if (user?.role === 'vendor') {
+      localStorage.setItem('vendor_token', token);
+    } else if (user?.role === 'admin') {
+      localStorage.setItem('admin_token', token);
+    } else {
+      localStorage.setItem('customer_token', token);
+    }
+    localStorage.setItem('token', token);
     return res.data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Login failed');
@@ -23,7 +31,15 @@ export const loginUser = createAsyncThunk('auth/loginUser', async (credentials, 
 export const registerUser = createAsyncThunk('auth/registerUser', async (data, { rejectWithValue }) => {
   try {
     const res = await API.post('/auth/register', data);
-    localStorage.setItem('token', res.data.token);
+    const { token, user } = res.data;
+    if (user?.role === 'vendor') {
+      localStorage.setItem('vendor_token', token);
+    } else if (user?.role === 'admin') {
+      localStorage.setItem('admin_token', token);
+    } else {
+      localStorage.setItem('customer_token', token);
+    }
+    localStorage.setItem('token', token);
     return res.data;
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Registration failed');
@@ -33,7 +49,13 @@ export const registerUser = createAsyncThunk('auth/registerUser', async (data, {
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
-    token: localStorage.getItem('token'),
+    token: (() => {
+      const isSellerRoute = window.location.pathname.startsWith('/seller');
+      const isAdminRoute = window.location.pathname.startsWith('/admin');
+      if (isAdminRoute) return localStorage.getItem('admin_token') || localStorage.getItem('token');
+      if (isSellerRoute) return localStorage.getItem('vendor_token') || localStorage.getItem('token');
+      return localStorage.getItem('customer_token') || localStorage.getItem('token');
+    })(),
     user: null,
     loading: false,
     error: null,
@@ -41,6 +63,15 @@ const authSlice = createSlice({
   },
   reducers: {
     logout: (state) => {
+      const isSellerRoute = window.location.pathname.startsWith('/seller');
+      const isAdminRoute = window.location.pathname.startsWith('/admin');
+      if (isAdminRoute) {
+        localStorage.removeItem('admin_token');
+      } else if (isSellerRoute) {
+        localStorage.removeItem('vendor_token');
+      } else {
+        localStorage.removeItem('customer_token');
+      }
       localStorage.removeItem('token');
       state.token = null;
       state.user = null;

@@ -6,7 +6,18 @@ const API = axios.create({
 
 // Automatically inject JWT Bearer Token if available in localStorage
 API.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const isSellerRoute = window.location.pathname.startsWith('/seller') || config.url.includes('/vendor') || config.url.includes('/seller');
+  const isAdminRoute = window.location.pathname.startsWith('/admin') || config.url.includes('/admin');
+  
+  let token = null;
+  if (isAdminRoute) {
+    token = localStorage.getItem('admin_token') || localStorage.getItem('token');
+  } else if (isSellerRoute) {
+    token = localStorage.getItem('vendor_token') || localStorage.getItem('token');
+  } else {
+    token = localStorage.getItem('customer_token') || localStorage.getItem('token');
+  }
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

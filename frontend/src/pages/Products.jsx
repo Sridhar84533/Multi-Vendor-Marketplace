@@ -17,9 +17,11 @@ const Products = () => {
   const [totalProducts, setTotalProducts] = useState(0);
 
   // Filter states derived directly from searchParams (single source of truth)
+  const searchQuery = searchParams.get('search') || '';
   const category = searchParams.get('category') || '';
-  const selectedBrand = searchParams.get('brand')
-    ? searchParams.get('brand').split(',').map((b) => b.trim()).filter(Boolean)
+  const brandStr = searchParams.get('brand') || '';
+  const selectedBrand = brandStr
+    ? brandStr.split(',').map((b) => b.trim()).filter(Boolean)
     : [];
   const minPrice = searchParams.get('minPrice') || '';
   const maxPrice = searchParams.get('maxPrice') || '';
@@ -35,15 +37,14 @@ const Products = () => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const query = searchParams.get('search') || '';
         const categoryQuery = category ? `&category=${encodeURIComponent(category)}` : '';
-        const brandQuery = selectedBrand.length > 0 ? `&brand=${encodeURIComponent(selectedBrand.join(','))}` : '';
+        const brandQuery = brandStr ? `&brand=${encodeURIComponent(brandStr)}` : '';
         const priceQuery = `${minPrice ? `&minPrice=${minPrice}` : ''}${maxPrice ? `&maxPrice=${maxPrice}` : ''}`;
         const ratingQuery = rating ? `&rating=${rating}` : '';
         const sortQuery = sort ? `&sort=${sort}` : '';
 
         const res = await API.get(
-          `/products?search=${encodeURIComponent(query)}${categoryQuery}${brandQuery}${priceQuery}${ratingQuery}${sortQuery}&page=${page}&limit=12`
+          `/products?search=${encodeURIComponent(searchQuery)}${categoryQuery}${brandQuery}${priceQuery}${ratingQuery}${sortQuery}&page=${page}&limit=12`
         );
         
         setProducts(res.data.products || []);
@@ -58,7 +59,7 @@ const Products = () => {
       }
     };
     fetchProducts();
-  }, [searchParams, category, selectedBrand, minPrice, maxPrice, rating, sort, page]);
+  }, [searchQuery, category, brandStr, minPrice, maxPrice, rating, sort, page]);
 
   const handleCategoryChange = (cat) => {
     const params = new URLSearchParams(searchParams);

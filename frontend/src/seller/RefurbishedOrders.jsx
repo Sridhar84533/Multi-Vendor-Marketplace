@@ -50,6 +50,12 @@ export default function RefurbishedOrders() {
   const [success, setSuccess] = useState({});
   const [errors, setErrors] = useState({});
 
+  // Editing state for already refurbished products
+  const [editingOrderId, setEditingOrderId] = useState(null);
+  const [editForm, setEditForm] = useState(null);
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [editError, setEditError] = useState('');
+
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -79,6 +85,119 @@ export default function RefurbishedOrders() {
   }, []);
 
   const toggleExpand = (id) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
+
+  const handleStartEdit = (order) => {
+    const prod = order.refurbishedProductId;
+    if (!prod) return;
+    setEditingOrderId(order._id);
+    setEditError('');
+    setEditForm({
+      refurbishedDiscount: prod.refurbishedDiscount || 0,
+      refurbishedCondition: prod.refurbishedCondition || 'Good',
+      refurbishedNotes: prod.refurbishedNotes || '',
+      qcChecklist: prod.qcChecklist || [],
+    });
+  };
+
+  const updateEditForm = (field, value) => {
+    setEditForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const toggleEditQC = (index) => {
+    setEditForm(prev => {
+      const updated = prev.qcChecklist.map((c, i) =>
+        i === index ? { ...c, passed: !c.passed } : c
+      );
+      return { ...prev, qcChecklist: updated };
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingOrderId(null);
+    setEditForm(null);
+    setEditError('');
+  };
+
+  const handleSaveEdit = async (order) => {
+    const prodId = order.refurbishedProductId?._id || order.refurbishedProductId;
+    if (!prodId) return;
+    setEditSubmitting(true);
+    setEditError('');
+    try {
+      const allPassed = editForm.qcChecklist.every(c => c.passed);
+      const payload = {
+        ...editForm,
+        qcStatus: allPassed ? 'Passed' : 'Failed',
+      };
+      await API.put(`/products/${prodId}`, payload);
+      
+      // Update local state so UI updates
+      setDoneOrders(prev => prev.map(o => {
+        if (o._id === order._id) {
+          const updatedProduct = {
+            ...o.refurbishedProductId,
+            ...payload,
+            isActive: allPassed,
+          };
+          return { ...o, refurbishedProductId: updatedProduct };
+        }
+        return o;
+      }));
+
+      // If the edited product QC failed, it is no longer active, so it should go back to returnOrders!
+      if (!allPassed) {
+        setDoneOrders(prev => prev.filter(o => o._id !== order._id));
+        setReturnOrders(prev => {
+          if (prev.some(o => o._id === order._id)) return prev;
+          const updatedOrder = {
+            ...order,
+            refurbishedProductId: {
+              ...order.refurbishedProductId,
+              ...payload,
+              isActive: false,
+            }
+          };
+          return [...prev, updatedOrder];
+        });
+      }
+
+      setEditingOrderId(null);
+      setEditForm(null);
+    } catch (err) {
+      setEditError(err.response?.data?.message || 'Failed to update refurbished product.');
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
+
+  const handleDeleteRefurbished = async (order) => {
+    const prodId = order.refurbishedProductId?._id || order.refurbishedProductId;
+    if (!prodId) return;
+    if (!window.confirm('Are you sure you want to delete this refurbished product listing? This will deactivate the listing and return the order to the refurbishment queue.')) {
+      return;
+    }
+    try {
+      await API.delete(`/products/${prodId}`);
+      
+      // Remove from doneOrders
+      setDoneOrders(prev => prev.filter(o => o._id !== order._id));
+      
+      // Add back to returnOrders since it is now inactive (isActive: false)
+      setReturnOrders(prev => {
+        if (prev.some(o => o._id === order._id)) return prev;
+        const updatedOrder = {
+          ...order,
+          refurbishedProductId: {
+            ...order.refurbishedProductId,
+            isActive: false,
+          }
+        };
+        return [...prev, updatedOrder];
+      });
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete refurbished product.');
+    }
+  };
 
   const generateFrontendChecklist = (product) => {
     if (!product) return [];
@@ -452,31 +571,193 @@ export default function RefurbishedOrders() {
           </h2>
           {doneOrders.map(order => {
             const item = order.items?.[0];
+            const isEditing = editingOrderId === order._id;
             return (
               <div key={order._id} style={{
                 background: '#fff', borderRadius: '12px', marginBottom: '0.75rem',
-                border: '1px solid #bbf7d0', padding: '1rem 1.25rem',
-                display: 'flex', alignItems: 'center', gap: '1rem',
+                border: isEditing ? '1px solid #2563eb' : '1px solid #bbf7d0',
+                boxShadow: isEditing ? '0 4px 20px rgba(37,99,235,0.08)' : '0 1px 4px rgba(0,0,0,0.02)',
+                overflow: 'hidden',
+                transition: 'all 0.2s'
               }}>
-                <img
-                  src={item?.image || 'https://via.placeholder.com/48'}
-                  alt={item?.title}
-                  style={{ width: 48, height: 48, borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }}
-                  onError={e => { e.target.src = 'https://via.placeholder.com/48'; }}
-                />
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontWeight: 700, fontSize: '0.88rem', color: '#1e293b' }}>{item?.title}</p>
-                  <p style={{ margin: '2px 0 0', fontSize: '0.76rem', color: '#64748b' }}>
-                    Order #{order._id.slice(-8).toUpperCase()}
-                  </p>
+                <div style={{
+                  padding: '1rem 1.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  borderBottom: isEditing ? '1px solid #e2e8f0' : 'none',
+                  background: isEditing ? '#f8fafc' : '#fff',
+                }}>
+                  <img
+                    src={item?.image || 'https://via.placeholder.com/48'}
+                    alt={item?.title}
+                    style={{ width: 48, height: 48, borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }}
+                    onError={e => { e.target.src = 'https://via.placeholder.com/48'; }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <p style={{ margin: 0, fontWeight: 700, fontSize: '0.88rem', color: '#1e293b' }}>{item?.title}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
+                      <span style={{ fontSize: '0.76rem', color: '#64748b' }}>
+                        Order #{order._id.slice(-8).toUpperCase()}
+                      </span>
+                      {order.refurbishedProductId?.category && (
+                        <span style={{
+                          fontSize: '0.74rem', background: '#f1f5f9', color: '#475569',
+                          padding: '1px 8px', borderRadius: '12px', fontWeight: 600
+                        }}>
+                          Category: {order.refurbishedProductId.category}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {badge('✓ Refurbished', '#0d9488')}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+                    <Link
+                      to={`/products/${order.refurbishedProductId?._id || order.refurbishedProductId}`}
+                      style={{ fontSize: '0.78rem', color: '#0d9488', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}
+                    >
+                      View Listing →
+                    </Link>
+                    {!isEditing && (
+                      <>
+                        <button
+                          onClick={() => handleStartEdit(order)}
+                          style={{
+                            background: 'none', border: 'none', padding: '4px 8px',
+                            color: '#2563eb', fontWeight: 600, fontSize: '0.78rem',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteRefurbished(order)}
+                          style={{
+                            background: 'none', border: 'none', padding: '4px 8px',
+                            color: '#dc2626', fontWeight: 600, fontSize: '0.78rem',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
-                {badge('✓ Refurbished', '#0d9488')}
-                <Link
-                  to={`/products/${order.refurbishedProductId?._id || order.refurbishedProductId}`}
-                  style={{ fontSize: '0.78rem', color: '#0d9488', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}
-                >
-                  View Listing →
-                </Link>
+
+                {isEditing && (
+                  <div style={{ padding: '1.25rem', background: '#fafafa' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                      {/* Discount */}
+                      <div>
+                        <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569', display: 'block', marginBottom: '4px' }}>
+                          Refurbished Discount (%)
+                        </label>
+                        <input
+                          type="number" min={0} max={80}
+                          value={editForm.refurbishedDiscount}
+                          onChange={e => updateEditForm('refurbishedDiscount', Number(e.target.value))}
+                          style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                        />
+                        <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: '#0d9488', fontWeight: 600 }}>
+                          New Price: Rs. {Math.round((order.refurbishedProductId?.price || item?.price || 0) * (1 - editForm.refurbishedDiscount / 100))} &nbsp;(was Rs. {order.refurbishedProductId?.price || item?.price})
+                        </p>
+                      </div>
+
+                      {/* Condition */}
+                      <div>
+                        <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569', display: 'block', marginBottom: '4px' }}>
+                          Product Condition
+                        </label>
+                        <select
+                          value={editForm.refurbishedCondition}
+                          onChange={e => updateEditForm('refurbishedCondition', e.target.value)}
+                          style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.9rem', background: '#fff', boxSizing: 'border-box' }}
+                        >
+                          {['Like New', 'Good', 'Fair'].map(c => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                        <p style={{ margin: '4px 0 0', fontSize: '0.75rem', fontWeight: 600, color: CONDITION_COLORS[editForm.refurbishedCondition] }}>
+                          ● {editForm.refurbishedCondition}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* QC Checklist */}
+                    <div style={{ marginBottom: '1rem' }}>
+                      <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                        <ClipboardList size={15} /> QC / Testing Checklist
+                        <span style={{ marginLeft: 'auto', fontSize: '0.75rem', color: editForm.qcChecklist.filter(c => c.passed).length === editForm.qcChecklist.length ? '#16a34a' : '#f59e0b', fontWeight: 700 }}>
+                          {editForm.qcChecklist.filter(c => c.passed).length}/{editForm.qcChecklist.length} passed
+                        </span>
+                      </label>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                        {editForm.qcChecklist.map((c, i) => (
+                          <label key={i} style={{
+                            display: 'flex', alignItems: 'center', gap: '8px',
+                            padding: '6px 10px', borderRadius: '8px', cursor: 'pointer',
+                            background: c.passed ? '#f0fdf4' : '#fef2f2',
+                            border: `1px solid ${c.passed ? '#bbf7d0' : '#fecaca'}`,
+                            fontSize: '0.8rem', fontWeight: 500,
+                            transition: 'all 0.15s',
+                          }}>
+                            <input type="checkbox" checked={c.passed} onChange={() => toggleEditQC(i)} style={{ accentColor: '#0d9488' }} />
+                            {c.passed
+                              ? <CheckCircle2 size={13} color="#16a34a" />
+                              : <XCircle size={13} color="#dc2626" />
+                            }
+                            {c.item}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Notes */}
+                    <div style={{ marginBottom: '1rem' }}>
+                      <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569', display: 'block', marginBottom: '4px' }}>
+                        Refurbishment Notes (optional)
+                      </label>
+                      <textarea
+                        rows={2}
+                        placeholder="e.g. Screen replaced, battery health 92%, cosmetic scratches on back cover"
+                        value={editForm.refurbishedNotes}
+                        onChange={e => updateEditForm('refurbishedNotes', e.target.value)}
+                        style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.85rem', resize: 'vertical', boxSizing: 'border-box' }}
+                      />
+                    </div>
+
+                    {editError && (
+                      <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '0.6rem 0.8rem', marginBottom: '1rem', fontSize: '0.83rem', color: '#dc2626' }}>
+                        ⚠️ {editError}
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button
+                        onClick={handleCancelEdit}
+                        style={{
+                          flex: 1, padding: '0.6rem', borderRadius: '8px', border: '1px solid #cbd5e1',
+                          background: '#fff', color: '#475569', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer'
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => handleSaveEdit(order)}
+                        disabled={editSubmitting}
+                        style={{
+                          flex: 2, padding: '0.6rem', borderRadius: '8px', border: 'none',
+                          background: editSubmitting ? '#94a3b8' : 'linear-gradient(135deg, #0d9488, #0f766e)',
+                          color: '#fff', fontWeight: 700, fontSize: '0.85rem', cursor: editSubmitting ? 'not-allowed' : 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                        }}
+                      >
+                        {editSubmitting ? 'Saving...' : 'Save Changes'}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}

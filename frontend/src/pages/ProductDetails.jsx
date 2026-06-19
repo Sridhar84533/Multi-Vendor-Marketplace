@@ -16,7 +16,7 @@ const ProductDetails = () => {
   const dispatch = useDispatch();
   const { items: wishlistItems } = useSelector((state) => state.wishlist);
   const { items: cartItems } = useSelector((state) => state.cart);
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -328,7 +328,7 @@ const ProductDetails = () => {
           ))}
 
           {/* Quantity Selector */}
-          {product.stock > 0 && (
+          {user?.role !== 'vendor' && product.stock > 0 && (
             <div style={{ marginTop: '1.2rem' }}>
               <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: '0.3rem' }}>Quantity</label>
               <select
@@ -345,32 +345,48 @@ const ProductDetails = () => {
           )}
 
           {/* Action triggers */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '1.5rem' }}>
-            <button
-              disabled={product.stock === 0}
-              onClick={handleAddToCart}
-              className="btn btn-primary"
-              style={{ width: '100%', padding: '0.7rem', opacity: product.stock === 0 ? 0.45 : 1, cursor: product.stock === 0 ? 'not-allowed' : 'pointer' }}
-            >
-              <ShoppingCart size={18} /> Add to Cart
-            </button>
-            <button
-              disabled={product.stock === 0}
-              onClick={handleBuyNow}
-              className="btn btn-secondary"
-              style={{ width: '100%', padding: '0.7rem', opacity: product.stock === 0 ? 0.45 : 1, cursor: product.stock === 0 ? 'not-allowed' : 'pointer' }}
-            >
-              Buy Now
-            </button>
-            <button
-              onClick={handleToggleWishlist}
-              className="btn btn-outline"
-              style={{ width: '100%', padding: '0.7rem', display: 'flex', justifyContent: 'center', gap: '6px' }}
-            >
-              <Heart size={18} fill={isInWishlist ? 'var(--danger)' : 'none'} color={isInWishlist ? 'var(--danger)' : 'currentColor'} />
-              {isInWishlist ? 'Wishlisted' : 'Add to Wishlist'}
-            </button>
-          </div>
+          {user?.role !== 'vendor' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '1.5rem' }}>
+              <button
+                disabled={product.stock === 0}
+                onClick={handleAddToCart}
+                className="btn btn-primary"
+                style={{ width: '100%', padding: '0.7rem', opacity: product.stock === 0 ? 0.45 : 1, cursor: product.stock === 0 ? 'not-allowed' : 'pointer' }}
+              >
+                <ShoppingCart size={18} /> Add to Cart
+              </button>
+              <button
+                disabled={product.stock === 0}
+                onClick={handleBuyNow}
+                className="btn btn-secondary"
+                style={{ width: '100%', padding: '0.7rem', opacity: product.stock === 0 ? 0.45 : 1, cursor: product.stock === 0 ? 'not-allowed' : 'pointer' }}
+              >
+                Buy Now
+              </button>
+              <button
+                onClick={handleToggleWishlist}
+                className="btn btn-outline"
+                style={{ width: '100%', padding: '0.7rem', display: 'flex', justifyContent: 'center', gap: '6px' }}
+              >
+                <Heart size={18} fill={isInWishlist ? 'var(--danger)' : 'none'} color={isInWishlist ? 'var(--danger)' : 'currentColor'} />
+                {isInWishlist ? 'Wishlisted' : 'Add to Wishlist'}
+              </button>
+            </div>
+          ) : (
+            <div style={{
+              marginTop: '1.5rem',
+              padding: '12px',
+              backgroundColor: '#f8fafc',
+              border: '1px dashed #cbd5e1',
+              borderRadius: '8px',
+              textAlign: 'center',
+              fontSize: '0.85rem',
+              color: '#64748b',
+              fontWeight: 600
+            }}>
+              💡 Vendors cannot purchase products.
+            </div>
+          )}
         </div>
       </div>
 

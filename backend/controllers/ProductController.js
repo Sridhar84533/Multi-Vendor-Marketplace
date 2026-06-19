@@ -210,6 +210,12 @@ exports.updateProduct = async (req, res) => {
       tags,
       specifications,
       existingImages,
+      isRefurbished,
+      refurbishedDiscount,
+      refurbishedCondition,
+      refurbishedNotes,
+      qcStatus,
+      qcChecklist,
     } = req.body;
 
     if (price) product.price = price;
@@ -231,6 +237,21 @@ exports.updateProduct = async (req, res) => {
     if (existingImages) {
       product.images = typeof existingImages === 'string' ? JSON.parse(existingImages) : existingImages;
     }
+
+    if (isRefurbished !== undefined) product.isRefurbished = isRefurbished;
+    if (refurbishedDiscount !== undefined) {
+      const discountPct = Number(refurbishedDiscount) || 0;
+      product.refurbishedDiscount = discountPct;
+      product.discountPercent = discountPct;
+      product.discountPrice = discountPct > 0 ? Math.round(product.price * (1 - discountPct / 100)) : undefined;
+    }
+    if (refurbishedCondition) product.refurbishedCondition = refurbishedCondition;
+    if (refurbishedNotes !== undefined) product.refurbishedNotes = refurbishedNotes;
+    if (qcStatus) {
+      product.qcStatus = qcStatus;
+      product.isActive = qcStatus === 'Passed';
+    }
+    if (qcChecklist) product.qcChecklist = typeof qcChecklist === 'string' ? JSON.parse(qcChecklist) : qcChecklist;
 
     if (req.files && req.files.length > 0) {
       const baseUrl = `${req.protocol}://${req.get('host')}`;

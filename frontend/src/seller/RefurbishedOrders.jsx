@@ -42,7 +42,7 @@ const badge = (label, color) => (
 
 export default function RefurbishedOrders() {
   const [returnOrders, setReturnOrders] = useState([]);
-  const [doneOrders, setDoneOrders] = useState([]);
+  const [refurbishedProducts, setRefurbishedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState({});
   const [forms, setForms] = useState({});
@@ -51,51 +51,52 @@ export default function RefurbishedOrders() {
   const [errors, setErrors] = useState({});
 
   // Editing state for already refurbished products
-  const [editingOrderId, setEditingOrderId] = useState(null);
+  const [editingProductId, setEditingProductId] = useState(null);
   const [editForm, setEditForm] = useState(null);
   const [editSubmitting, setEditSubmitting] = useState(false);
   const [editError, setEditError] = useState('');
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    const fetchData = async () => {
       try {
-        const res = await API.get('/orders/vendor');
-        const all = res.data || [];
-        setReturnOrders(all.filter(o => {
+        const [ordersRes, productsRes] = await Promise.all([
+          API.get('/orders/vendor'),
+          API.get('/vendor/products'),
+        ]);
+
+        const allOrders = ordersRes.data || [];
+        const allProducts = productsRes.data || [];
+
+        setReturnOrders(allOrders.filter(o => {
           if (!['Return Approved', 'Refunded'].includes(o.status)) return false;
           const p = o.refurbishedProductId;
           if (!p) return true;
           if (typeof p === 'object' && (p.qcStatus === 'Pending' || p.isActive === false)) return true;
           return false;
         }));
-        setDoneOrders(all.filter(o => {
-          const p = o.refurbishedProductId;
-          if (!p) return false;
-          if (typeof p !== 'object') return true;
-          return p.qcStatus !== 'Pending' && p.isActive !== false;
-        }));
-      } catch {
+
+        setRefurbishedProducts(allProducts.filter(p => p.isRefurbished && p.isActive));
+      } catch (err) {
+        console.error('Error fetching data:', err);
         setReturnOrders([]);
-        setDoneOrders([]);
+        setRefurbishedProducts([]);
       } finally {
         setLoading(false);
       }
     };
-    fetchOrders();
+    fetchData();
   }, []);
 
   const toggleExpand = (id) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
 
-  const handleStartEdit = (order) => {
-    const prod = order.refurbishedProductId;
-    if (!prod) return;
-    setEditingOrderId(order._id);
+  const handleStartEdit = (product) => {
+    setEditingProductId(product._id);
     setEditError('');
     setEditForm({
-      refurbishedDiscount: prod.refurbishedDiscount || 0,
-      refurbishedCondition: prod.refurbishedCondition || 'Good',
-      refurbishedNotes: prod.refurbishedNotes || '',
-      qcChecklist: prod.qcChecklist || [],
+      refurbishedDiscount: product.refurbishedDiscount || 0,
+      refurbishedCondition: product.refurbishedCondition || 'Good',
+      refurbishedNotes: product.refurbishedNotes || '',
+      qcChecklist: product.qcChecklist || [],
     });
   };
 
@@ -113,14 +114,12 @@ export default function RefurbishedOrders() {
   };
 
   const handleCancelEdit = () => {
-    setEditingOrderId(null);
+    setEditingProductId(null);
     setEditForm(null);
     setEditError('');
   };
 
-  const handleSaveEdit = async (order) => {
-    const prodId = order.refurbishedProductId?._id || order.refurbishedProductId;
-    if (!prodId) return;
+  const handleSaveEdit = async (product) => {
     setEditSubmitting(true);
     setEditError('');
     try {
@@ -129,39 +128,32 @@ export default function RefurbishedOrders() {
         ...editForm,
         qcStatus: allPassed ? 'Passed' : 'Failed',
       };
-      await API.put(`/products/${prodId}`, payload);
+      await API.put(`/products/${product._id}`, payload);
       
       // Update local state so UI updates
-      setDoneOrders(prev => prev.map(o => {
-        if (o._id === order._id) {
-          const updatedProduct = {
-            ...o.refurbishedProductId,
-            ...payload,
-            isActive: allPassed,
-          };
-          return { ...o, refurbishedProductId: updatedProduct };
-        }
-        return o;
-      }));
-
-      // If the edited product QC failed, it is no longer active, so it should go back to returnOrders!
-      if (!allPassed) {
-        setDoneOrders(prev => prev.filter(o => o._id !== order._id));
-        setReturnOrders(prev => {
-          if (prev.some(o => o._id === order._id)) return prev;
-          const updatedOrder = {
-            ...order,
-            refurbishedProductId: {
-              ...order.refurbishedProductId,
-              ...payload,
-              isActive: false,
-            }
-          };
-          return [...prev, updatedOrder];
-        });
+      if (allPassed) {
+        setRefurbishedProducts(prev => prev.map(p => {
+          if (p._id === product._id) {
+            return { ...p, ...payload, isActive: true };
+          }
+          return p;
+        }));
+      } else {
+        // QC Failed - remove from refurbishedProducts
+        setRefurbishedProducts(prev => prev.filter(p => p._id !== product._id));
+        // Re-load returnOrders to get the returned order back in the queue
+        const ordersRes = await API.get('/orders/vendor');
+        const allOrders = ordersRes.data || [];
+        setReturnOrders(allOrders.filter(o => {
+          if (!['Return Approved', 'Refunded'].includes(o.status)) return false;
+          const p = o.refurbishedProductId;
+          if (!p) return true;
+          if (typeof p === 'object' && (p.qcStatus === 'Pending' || p.isActive === false)) return true;
+          return false;
+        }));
       }
 
-      setEditingOrderId(null);
+      setEditingProductId(null);
       setEditForm(null);
     } catch (err) {
       setEditError(err.response?.data?.message || 'Failed to update refurbished product.');
@@ -170,30 +162,26 @@ export default function RefurbishedOrders() {
     }
   };
 
-  const handleDeleteRefurbished = async (order) => {
-    const prodId = order.refurbishedProductId?._id || order.refurbishedProductId;
-    if (!prodId) return;
+  const handleDeleteRefurbished = async (product) => {
     if (!window.confirm('Are you sure you want to delete this refurbished product listing? This will deactivate the listing and return the order to the refurbishment queue.')) {
       return;
     }
     try {
-      await API.delete(`/products/${prodId}`);
+      await API.delete(`/products/${product._id}`);
       
-      // Remove from doneOrders
-      setDoneOrders(prev => prev.filter(o => o._id !== order._id));
+      // Remove from refurbishedProducts
+      setRefurbishedProducts(prev => prev.filter(p => p._id !== product._id));
       
-      // Add back to returnOrders since it is now inactive (isActive: false)
-      setReturnOrders(prev => {
-        if (prev.some(o => o._id === order._id)) return prev;
-        const updatedOrder = {
-          ...order,
-          refurbishedProductId: {
-            ...order.refurbishedProductId,
-            isActive: false,
-          }
-        };
-        return [...prev, updatedOrder];
-      });
+      // Re-load returnOrders to get the returned order back in the queue
+      const ordersRes = await API.get('/orders/vendor');
+      const allOrders = ordersRes.data || [];
+      setReturnOrders(allOrders.filter(o => {
+        if (!['Return Approved', 'Refunded'].includes(o.status)) return false;
+        const p = o.refurbishedProductId;
+        if (!p) return true;
+        if (typeof p === 'object' && (p.qcStatus === 'Pending' || p.isActive === false)) return true;
+        return false;
+      }));
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to delete refurbished product.');
     }
@@ -337,6 +325,10 @@ export default function RefurbishedOrders() {
       });
       setSuccess(prev => ({ ...prev, [orderId]: true }));
       setReturnOrders(prev => prev.filter(o => o._id !== orderId));
+
+      const productsRes = await API.get('/vendor/products');
+      const allProducts = productsRes.data || [];
+      setRefurbishedProducts(allProducts.filter(p => p.isRefurbished && p.isActive));
     } catch (err) {
       setErrors(prev => ({
         ...prev,
@@ -564,20 +556,20 @@ export default function RefurbishedOrders() {
       })}
 
       {/* Already refurbished section */}
-      {doneOrders.length > 0 && (() => {
-        const groupedDoneOrders = doneOrders.reduce((acc, order) => {
-          const cat = order.refurbishedProductId?.category || 'Other';
+      {refurbishedProducts.length > 0 && (() => {
+        const groupedRefurbished = refurbishedProducts.reduce((acc, prod) => {
+          const cat = prod.category || 'Other';
           if (!acc[cat]) acc[cat] = [];
-          acc[cat].push(order);
+          acc[cat].push(prod);
           return acc;
         }, {});
 
         return (
           <>
             <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e293b', margin: '2rem 0 1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <CheckCircle2 size={18} color="#16a34a" /> Already Refurbished ({doneOrders.length})
+              <CheckCircle2 size={18} color="#16a34a" /> Already Refurbished ({refurbishedProducts.length})
             </h2>
-            {Object.entries(groupedDoneOrders).map(([categoryName, orders]) => (
+            {Object.entries(groupedRefurbished).map(([categoryName, products]) => (
               <div key={categoryName} style={{ marginBottom: '1.5rem' }}>
                 <h3 style={{
                   fontSize: '0.82rem', fontWeight: 700, color: '#0f766e',
@@ -586,13 +578,12 @@ export default function RefurbishedOrders() {
                   alignItems: 'center', gap: '6px',
                   marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em'
                 }}>
-                  📂 {categoryName} ({orders.length})
+                  📂 {categoryName} ({products.length})
                 </h3>
-                {orders.map(order => {
-                  const item = order.items?.[0];
-                  const isEditing = editingOrderId === order._id;
+                {products.map(product => {
+                  const isEditing = editingProductId === product._id;
                   return (
-                    <div key={order._id} style={{
+                    <div key={product._id} style={{
                       background: '#fff', borderRadius: '12px', marginBottom: '0.75rem',
                       border: isEditing ? '1px solid #2563eb' : '1px solid #bbf7d0',
                       boxShadow: isEditing ? '0 4px 20px rgba(37,99,235,0.08)' : '0 1px 4px rgba(0,0,0,0.02)',
@@ -608,31 +599,31 @@ export default function RefurbishedOrders() {
                         background: isEditing ? '#f8fafc' : '#fff',
                       }}>
                         <img
-                          src={item?.image || 'https://via.placeholder.com/48'}
-                          alt={item?.title}
+                          src={product.images?.[0]?.url || 'https://via.placeholder.com/48'}
+                          alt={product.title}
                           style={{ width: 48, height: 48, borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }}
                           onError={e => { e.target.src = 'https://via.placeholder.com/48'; }}
                         />
                         <div style={{ flex: 1 }}>
-                          <p style={{ margin: 0, fontWeight: 700, fontSize: '0.88rem', color: '#1e293b' }}>{item?.title}</p>
+                          <p style={{ margin: 0, fontWeight: 700, fontSize: '0.88rem', color: '#1e293b' }}>{product.title}</p>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
-                            <span style={{ fontSize: '0.76rem', color: '#64748b' }}>
-                              Order #{order._id.slice(-8).toUpperCase()}
-                            </span>
-                            {order.refurbishedProductId?.category && (
-                              <span style={{
-                                fontSize: '0.74rem', background: '#f1f5f9', color: '#475569',
-                                padding: '1px 8px', borderRadius: '12px', fontWeight: 600
-                              }}>
-                                Category: {order.refurbishedProductId.category}
+                            {product.sku && (
+                              <span style={{ fontSize: '0.76rem', color: '#64748b' }}>
+                                SKU: {product.sku}
                               </span>
                             )}
+                            <span style={{
+                              fontSize: '0.74rem', background: '#f1f5f9', color: '#475569',
+                              padding: '1px 8px', borderRadius: '12px', fontWeight: 600
+                            }}>
+                              Category: {product.category || 'Other'}
+                            </span>
                           </div>
                         </div>
                         {badge('✓ Refurbished', '#0d9488')}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
                           <Link
-                            to={`/products/${order.refurbishedProductId?._id || order.refurbishedProductId}`}
+                            to={`/products/${product._id}`}
                             style={{ fontSize: '0.78rem', color: '#0d9488', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}
                           >
                             View Listing →
@@ -640,7 +631,7 @@ export default function RefurbishedOrders() {
                           {!isEditing && (
                             <>
                               <button
-                                onClick={() => handleStartEdit(order)}
+                                onClick={() => handleStartEdit(product)}
                                 style={{
                                   background: 'none', border: 'none', padding: '4px 8px',
                                   color: '#2563eb', fontWeight: 600, fontSize: '0.78rem',
@@ -650,7 +641,7 @@ export default function RefurbishedOrders() {
                                 Edit
                               </button>
                               <button
-                                onClick={() => handleDeleteRefurbished(order)}
+                                onClick={() => handleDeleteRefurbished(product)}
                                 style={{
                                   background: 'none', border: 'none', padding: '4px 8px',
                                   color: '#dc2626', fontWeight: 600, fontSize: '0.78rem',
@@ -679,7 +670,7 @@ export default function RefurbishedOrders() {
                                 style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.9rem', boxSizing: 'border-box' }}
                               />
                               <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: '#0d9488', fontWeight: 600 }}>
-                                New Price: Rs. {Math.round((order.refurbishedProductId?.price || item?.price || 0) * (1 - editForm.refurbishedDiscount / 100))} &nbsp;(was Rs. {order.refurbishedProductId?.price || item?.price})
+                                New Price: Rs. {Math.round((product.price || 0) * (1 - editForm.refurbishedDiscount / 100))} &nbsp;(was Rs. {product.price})
                               </p>
                             </div>
 
@@ -763,7 +754,7 @@ export default function RefurbishedOrders() {
                               Cancel
                             </button>
                             <button
-                              onClick={() => handleSaveEdit(order)}
+                              onClick={() => handleSaveEdit(product)}
                               disabled={editSubmitting}
                               style={{
                                 flex: 2, padding: '0.6rem', borderRadius: '8px', border: 'none',

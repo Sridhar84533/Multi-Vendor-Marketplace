@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import API from '../services/api';
 import Loader from '../components/Loader/Loader';
-import { LayoutDashboard, ShoppingBag, PlusCircle, Edit, Trash2, Tag } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, PlusCircle, Edit, Trash2, Tag, Search, X as XIcon } from 'lucide-react';
 import logo from '../assets/logo.png';
 import LogoInfoModal from '../components/LogoInfoModal/LogoInfoModal';
 
@@ -55,6 +55,7 @@ const ManageProducts = () => {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('list'); // 'list' | 'grid' | 'compact'
   const [activeCategory, setActiveCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
   const [showLogoModal, setShowLogoModal] = useState(false);
   const { user } = useSelector((state) => state.auth);
 
@@ -87,10 +88,21 @@ const ManageProducts = () => {
   /* ── Derive categories ── */
   const allCategories = ['All', ...Array.from(new Set(products.map((p) => p.category || 'Uncategorized')))];
 
+  /* ── Search filter: match by product ID or title ── */
+  const q = searchQuery.trim().toLowerCase();
+  const searchFiltered = q
+    ? products.filter(
+        (p) =>
+          (p._id || '').toLowerCase().includes(q) ||
+          (p.title || '').toLowerCase().includes(q) ||
+          (p.sku || '').toLowerCase().includes(q)
+      )
+    : products;
+
   const filteredProducts =
     activeCategory === 'All'
-      ? products
-      : products.filter((p) => (p.category || 'Uncategorized') === activeCategory);
+      ? searchFiltered
+      : searchFiltered.filter((p) => (p.category || 'Uncategorized') === activeCategory);
 
   /* Group filtered products by category */
   const grouped = filteredProducts.reduce((acc, p) => {
@@ -289,6 +301,62 @@ const ManageProducts = () => {
             </div>
           </div>
 
+          {/* ── Search Bar ── */}
+          <div style={{ marginBottom: '1.25rem' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '10px',
+              background: '#F9FAFB', border: '1.5px solid #E5E7EB',
+              borderRadius: '10px', padding: '0.5rem 0.85rem',
+              transition: 'border-color 0.2s, box-shadow 0.2s',
+              boxShadow: searchQuery ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none',
+              borderColor: searchQuery ? '#6366F1' : '#E5E7EB',
+            }}>
+              <Search size={17} color={searchQuery ? '#6366F1' : '#9CA3AF'} style={{ flexShrink: 0 }} />
+              <input
+                id="inventory-search"
+                type="text"
+                placeholder="Search by Product ID, SKU, or Product Name…"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setActiveCategory('All'); // reset category when searching
+                }}
+                style={{
+                  flex: 1, border: 'none', outline: 'none',
+                  background: 'transparent', fontSize: '0.9rem',
+                  color: '#111827', fontFamily: 'inherit',
+                }}
+              />
+              {searchQuery && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                  <span style={{
+                    fontSize: '0.75rem', fontWeight: 700,
+                    color: filteredProducts.length > 0 ? '#16A34A' : '#EF4444',
+                    background: filteredProducts.length > 0 ? '#DCFCE7' : '#FEE2E2',
+                    padding: '2px 8px', borderRadius: '10px',
+                  }}>
+                    {filteredProducts.length} match{filteredProducts.length !== 1 ? 'es' : ''}
+                  </span>
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    title="Clear search"
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: '#9CA3AF', display: 'flex', alignItems: 'center', padding: '2px',
+                    }}
+                  >
+                    <XIcon size={15} />
+                  </button>
+                </div>
+              )}
+            </div>
+            {searchQuery && filteredProducts.length === 0 && (
+              <p style={{ margin: '6px 0 0 4px', fontSize: '0.82rem', color: '#EF4444' }}>
+                No product found matching &quot;<strong>{searchQuery}</strong>&quot;. Try the full Product ID or a different keyword.
+              </p>
+            )}
+          </div>
+
           {/* ── Category Filter Tabs ── */}
           {products.length > 0 && (
             <div style={{
@@ -331,11 +399,27 @@ const ManageProducts = () => {
             <div style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>
               <ShoppingBag size={48} color="#D1D5DB" style={{ margin: '0 auto 1rem' }} />
               <p style={{ fontSize: '1rem' }}>
-                {products.length === 0 ? 'No products listed yet.' : `No products in "${activeCategory}".`}
+                {products.length === 0
+                  ? 'No products listed yet.'
+                  : searchQuery
+                  ? `No products match "${searchQuery}".`
+                  : `No products in "${activeCategory}".`}
               </p>
               {products.length === 0 && (
                 <button className="btn btn-primary" style={{ marginTop: '1rem' }} onClick={() => navigate('/seller/add-product')}>
                   Add Your First Product
+                </button>
+              )}
+              {searchQuery && filteredProducts.length === 0 && products.length > 0 && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  style={{
+                    marginTop: '0.75rem', background: 'none', border: '1px solid #6366F1',
+                    color: '#6366F1', borderRadius: '8px', padding: '0.4rem 1rem',
+                    fontSize: '0.85rem', cursor: 'pointer', fontWeight: 600,
+                  }}
+                >
+                  Clear Search
                 </button>
               )}
             </div>

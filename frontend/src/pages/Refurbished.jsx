@@ -3,7 +3,7 @@ import { getRefurbishedProducts } from '../services/api';
 import ProductCard from '../components/ProductCard/ProductCard';
 import Loader from '../components/Loader/Loader';
 import CompareBar from '../components/CompareBar/CompareBar';
-import { ShieldCheck, Sparkles, AlertCircle, ArrowLeftRight, X } from 'lucide-react';
+import { ShieldCheck, Sparkles, AlertCircle, X } from 'lucide-react';
 
 export default function Refurbished() {
   const [products, setProducts] = useState([]);
@@ -37,6 +37,33 @@ export default function Refurbished() {
 
   if (loading) return <Loader />;
 
+  /* ── Group products by category ── */
+  const grouped = products.reduce((acc, p) => {
+    const cat = p.category || 'Other';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(p);
+    return acc;
+  }, {});
+
+  const groupEntries = Object.entries(grouped);
+
+  /* ── Category accent colors (cycles) ── */
+  const CATEGORY_PALETTES = [
+    { bg: '#f0fdf4', border: '#bbf7d0', text: '#166534', bar: '#16a34a', icon: '📱' },
+    { bg: '#eff6ff', border: '#bfdbfe', text: '#1e40af', bar: '#3b82f6', icon: '💻' },
+    { bg: '#fdf4ff', border: '#e9d5ff', text: '#6b21a8', bar: '#a855f7', icon: '🎮' },
+    { bg: '#fff7ed', border: '#fed7aa', text: '#9a3412', bar: '#f97316', icon: '⚙️' },
+    { bg: '#fef2f2', border: '#fecaca', text: '#991b1b', bar: '#ef4444', icon: '🏋️' },
+    { bg: '#f0f9ff', border: '#bae6fd', text: '#075985', bar: '#0ea5e9', icon: '🏠' },
+    { bg: '#fffbeb', border: '#fde68a', text: '#92400e', bar: '#f59e0b', icon: '🎾' },
+    { bg: '#f5f3ff', border: '#ddd6fe', text: '#5b21b6', bar: '#8b5cf6', icon: '📸' },
+  ];
+
+  const catColorMap = {};
+  Object.keys(grouped).forEach((cat, i) => {
+    catColorMap[cat] = CATEGORY_PALETTES[i % CATEGORY_PALETTES.length];
+  });
+
   return (
     <div className="container" style={{ paddingBottom: '3rem' }}>
       {/* Hero Banner */}
@@ -50,28 +77,15 @@ export default function Refurbished() {
         position: 'relative',
         overflow: 'hidden',
       }}>
-        {/* Abstract background blobs for visual premium flare */}
         <div style={{
-          position: 'absolute',
-          top: '-20%',
-          right: '-10%',
-          width: '300px',
-          height: '300px',
-          borderRadius: '50%',
-          background: 'rgba(20,184,166,0.15)',
-          filter: 'blur(50px)',
-          pointerEvents: 'none',
+          position: 'absolute', top: '-20%', right: '-10%',
+          width: '300px', height: '300px', borderRadius: '50%',
+          background: 'rgba(20,184,166,0.15)', filter: 'blur(50px)', pointerEvents: 'none',
         }} />
         <div style={{
-          position: 'absolute',
-          bottom: '-30%',
-          left: '5%',
-          width: '250px',
-          height: '250px',
-          borderRadius: '50%',
-          background: 'rgba(4,120,87,0.1)',
-          filter: 'blur(40px)',
-          pointerEvents: 'none',
+          position: 'absolute', bottom: '-30%', left: '5%',
+          width: '250px', height: '250px', borderRadius: '50%',
+          background: 'rgba(4,120,87,0.1)', filter: 'blur(40px)', pointerEvents: 'none',
         }} />
 
         <div style={{ maxWidth: '650px', position: 'relative', zIndex: 1 }}>
@@ -111,19 +125,16 @@ export default function Refurbished() {
         </div>
       </div>
 
-      {/* Main product display listing */}
+      {/* Summary heading */}
       <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1e293b', marginBottom: '1.5rem' }}>
         Refurbished Offers Available ({products.length})
       </h2>
 
       {products.length === 0 ? (
         <div style={{
-          textAlign: 'center',
-          padding: '4rem 2rem',
-          backgroundColor: '#fff',
-          border: '1px solid #e2e8f0',
-          borderRadius: '16px',
-          color: '#64748b',
+          textAlign: 'center', padding: '4rem 2rem',
+          backgroundColor: '#fff', border: '1px solid #e2e8f0',
+          borderRadius: '16px', color: '#64748b',
           boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
         }}>
           <AlertCircle size={48} style={{ color: '#0d9488', margin: '0 auto 1rem', opacity: 0.6 }} />
@@ -133,15 +144,52 @@ export default function Refurbished() {
           </p>
         </div>
       ) : (
-        <div className="product-grid">
-          {products.map((p) => (
-            <ProductCard
-              key={p._id}
-              product={p}
-              onCompare={handleCompare}
-              isComparing={!!compareList.find((item) => item._id === p._id)}
-            />
-          ))}
+        /* ── Category-grouped sections ── */
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          {groupEntries.map(([catName, items]) => {
+            const palette = catColorMap[catName];
+            return (
+              <div key={catName}>
+                {/* Category Section Header */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                  marginBottom: '1.25rem', padding: '14px 20px',
+                  background: palette.bg, border: `1.5px solid ${palette.border}`,
+                  borderRadius: '14px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                }}>
+                  <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>{palette.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: palette.text, letterSpacing: '-0.01em' }}>
+                      {catName}
+                    </h3>
+                    <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: palette.text, opacity: 0.7 }}>
+                      {items.length} certified refurbished item{items.length !== 1 ? 's' : ''} available
+                    </p>
+                  </div>
+                  <span style={{
+                    background: palette.bar, color: '#fff',
+                    borderRadius: '20px', padding: '4px 14px',
+                    fontSize: '0.82rem', fontWeight: 700,
+                    boxShadow: `0 2px 8px ${palette.bar}55`,
+                  }}>
+                    {items.length} items
+                  </span>
+                </div>
+
+                {/* Products grid */}
+                <div className="product-grid">
+                  {items.map((p) => (
+                    <ProductCard
+                      key={p._id}
+                      product={p}
+                      onCompare={handleCompare}
+                      isComparing={!!compareList.find((item) => item._id === p._id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -169,15 +217,9 @@ export default function Refurbished() {
                   <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '0.5rem' }}>
                     <strong>Price:</strong> Rs. {p.price}
                   </div>
-                  <div>
-                    <strong>Category:</strong> {p.category}
-                  </div>
-                  <div>
-                    <strong>Rating:</strong> {p.rating} ⭐ ({p.numReviews} reviews)
-                  </div>
-                  <div>
-                    <strong>Brand:</strong> {p.brand}
-                  </div>
+                  <div><strong>Category:</strong> {p.category}</div>
+                  <div><strong>Rating:</strong> {p.rating} ⭐ ({p.numReviews} reviews)</div>
+                  <div><strong>Brand:</strong> {p.brand}</div>
                   <div>
                     <strong>Condition:</strong> <span style={{ color: '#0d9488', fontWeight: 700 }}>{p.refurbishedCondition || 'Good'}</span>
                   </div>

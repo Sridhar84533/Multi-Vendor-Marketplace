@@ -78,26 +78,20 @@ const Login = () => {
         <h2 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem', textAlign: 'center', color: '#333' }}>Sign In</h2>
 
 
-        {/* Idle-timeout notice */}
+        {/* Idle-timeout notice — single line */}
         {wasIdleLoggedOut && (
-          <div style={{
-            backgroundColor: '#FFFBEB',
-            border:          '1px solid #F59E0B',
-            color:           '#92400E',
-            padding:         '0.85rem 1rem',
-            borderRadius:    '8px',
-            fontSize:        '0.85rem',
-            marginBottom:    '1rem',
-            display:         'flex',
-            alignItems:      'flex-start',
-            gap:             '8px',
+          <p style={{
+            textAlign:    'center',
+            fontSize:     '0.82rem',
+            color:        '#92400E',
+            background:   '#FFFBEB',
+            border:       '1px solid #F59E0B',
+            borderRadius: '6px',
+            padding:      '0.45rem 0.75rem',
+            marginBottom: '1rem',
           }}>
-            <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>⏱️</span>
-            <span>
-              <strong>Session expired.</strong> You were automatically signed out after{' '}
-              <strong>5 minutes of inactivity</strong>. Please sign in again to continue.
-            </span>
-          </div>
+            ⏱ Session expired — please sign in again.
+          </p>
         )}
 
         {error && (

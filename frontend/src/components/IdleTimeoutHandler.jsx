@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../../redux/authSlice';
+import { logout } from '../redux/authSlice';
 
 // Thresholds (in milliseconds)
 const IDLE_WARNING_MS = 4.5 * 60 * 1000; // 4 min 30 sec

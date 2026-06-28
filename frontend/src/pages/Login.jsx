@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser, clearError } from '../redux/authSlice';
 import loginBg from '../assets/login_bg.png';
 
 const Login = () => {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const navigate   = useNavigate();
+  const dispatch   = useDispatch();
+  const location   = useLocation();
   const { loading, error, isAuthenticated, user } = useSelector((state) => state.auth);
+
+  // Check if the user was redirected here because of idle timeout
+  const wasIdleLoggedOut = new URLSearchParams(location.search).get('reason') === 'inactivity';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -73,7 +77,29 @@ const Login = () => {
       }}>
         <h2 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem', textAlign: 'center', color: '#333' }}>Sign In</h2>
 
-        
+
+        {/* Idle-timeout notice */}
+        {wasIdleLoggedOut && (
+          <div style={{
+            backgroundColor: '#FFFBEB',
+            border:          '1px solid #F59E0B',
+            color:           '#92400E',
+            padding:         '0.85rem 1rem',
+            borderRadius:    '8px',
+            fontSize:        '0.85rem',
+            marginBottom:    '1rem',
+            display:         'flex',
+            alignItems:      'flex-start',
+            gap:             '8px',
+          }}>
+            <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>⏱️</span>
+            <span>
+              <strong>Session expired.</strong> You were automatically signed out after{' '}
+              <strong>5 minutes of inactivity</strong>. Please sign in again to continue.
+            </span>
+          </div>
+        )}
+
         {error && (
           <div style={{ backgroundColor: '#FCF4F4', border: '1px solid #CC0C39', color: '#CC0C39', padding: '0.8rem', borderRadius: '4px', fontSize: '0.85rem', marginBottom: '1rem' }}>
             {error}

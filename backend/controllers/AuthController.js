@@ -6,10 +6,30 @@ const Vendor = require('../models/Vendor');
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE || '7d' });
 
+// ── Password complexity validator ─────────────────────────────────────────
+// Must contain: min 8 chars, '#', another special char, uppercase, digit.
+const PASSWORD_REGEX = /^(?=.*#)(?=.*[!@$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~])(?=.*[A-Z])(?=.*[0-9]).{8,}$/;
+
+const validatePassword = (password) => {
+  if (!PASSWORD_REGEX.test(password)) {
+    return (
+      'Password must be at least 8 characters and contain: ' +
+      'the # symbol, another special character (e.g. @, $, !, &), ' +
+      'an uppercase letter, and a number.'
+    );
+  }
+  return null; // valid
+};
+
 // @POST /api/auth/register
 exports.register = async (req, res) => {
   try {
     const { name, email, password, phone, role } = req.body;
+
+    // ── Server-side password complexity check ──
+    const pwError = validatePassword(password);
+    if (pwError) return res.status(400).json({ message: pwError });
+
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: 'Email already registered' });
 
@@ -84,6 +104,11 @@ exports.updateProfile = async (req, res) => {
 exports.changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
+
+    // ── Server-side password complexity check for new password ──
+    const pwError = validatePassword(newPassword);
+    if (pwError) return res.status(400).json({ message: pwError });
+
     const user = await User.findById(req.user._id);
     const match = await bcrypt.compare(currentPassword, user.password);
     if (!match) return res.status(400).json({ message: 'Current password is wrong' });

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loadUser } from './redux/authSlice';
+import IdleTimeoutHandler from './components/IdleTimeoutHandler';
 
 // Components
 import Navbar from './components/Navbar/Navbar';
@@ -85,7 +86,10 @@ function AppLayout() {
   const hideFooter = NO_FOOTER_PATHS.includes(location.pathname);
 
   return (
-    <Routes>
+    <>
+      {/* Global idle-timeout watcher — logs out after 5 min of inactivity */}
+      <IdleTimeoutHandler />
+      <Routes>
       {/* ── Admin Routes (no Navbar / Footer) ── */}
       <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
@@ -135,6 +139,7 @@ function AppLayout() {
         }
       />
     </Routes>
+    </>
   );
 }
 

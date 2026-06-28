@@ -4,6 +4,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const sanitizeInput = require('./middleware/sanitizeInput');
 
 const app = express();
 const server = http.createServer(app);
@@ -30,6 +31,10 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// ── NoSQL injection protection ──────────────────────────────────────────────────────
+// Strips MongoDB operator keys (e.g. {"email":{"$gt":""}}) from all
+// req.body / req.query / req.params before any route handler runs.
+app.use(sanitizeInput);
 app.use('/uploads', express.static('uploads'));
 
 // Routes

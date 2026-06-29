@@ -104,7 +104,7 @@ export default function SessionExpiredPopup() {
       {/* Text Area */}
       <div style={{ flex: 1 }}>
         <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 700, color: '#fca5a5', letterSpacing: '0.01em' }}>
-          Your session is expired
+          Your session got expired
         </h4>
         <p style={{ margin: '4px 0 0 0', fontSize: '0.82rem', color: 'rgba(243, 244, 246, 0.8)', lineHeight: 1.4 }}>
           You were automatically logged out due to inactivity. Please sign in again.

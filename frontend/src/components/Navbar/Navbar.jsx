@@ -124,10 +124,6 @@ const Navbar = () => {
               {/* Returns & Orders only for customers */}
               {!isVendor && !isAdmin && (
                 <>
-                  <Link to="/refurbished" className="nav-link">
-                    <span className="nav-line-1">Refurbished</span>
-                    <span className="nav-line-2">Deals</span>
-                  </Link>
                   <Link to="/orders" className="nav-link">
                     <span className="nav-line-1">Returns</span>
                     <span className="nav-line-2">&amp; Orders</span>
@@ -196,10 +192,6 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link to="/refurbished" className="nav-link">
-                <span className="nav-line-1">Refurbished</span>
-                <span className="nav-line-2">Deals</span>
-              </Link>
               <Link to="/login" className="nav-link">
                 <span className="nav-line-1">Hello, sign in</span>
                 <span className="nav-line-2">Account &amp; Lists</span>

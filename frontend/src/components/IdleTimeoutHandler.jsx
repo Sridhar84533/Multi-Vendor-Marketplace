@@ -4,10 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { logout } from '../redux/authSlice';
 
 // ─── Configuration ────────────────────────────────────────────────────────────
-const IDLE_TIMEOUT_MS  = 5 * 60 * 1000;   // 5 minutes → auto logout
-const WARN_BEFORE_MS   = 30 * 1000;        // show warning 30 s before logout
-const WARNING_SECS     = 30;               // countdown duration shown in modal
-
 const ACTIVITY_EVENTS  = [
   'mousemove', 'mousedown', 'keypress',
   'scroll',    'touchstart', 'click',
@@ -19,8 +15,54 @@ export default function IdleTimeoutHandler() {
   const navigate = useNavigate();
   const { isAuthenticated } = useSelector((s) => s.auth);
 
+  // Dynamic configuration calculation (defaults to 5 minutes)
+  const getTimeoutConfig = () => {
+    let timeoutSec = null;
+    const sessionVal = sessionStorage.getItem('active_idle_timeout_sec');
+    if (sessionVal) {
+      timeoutSec = parseInt(sessionVal, 10);
+    }
+
+    if (!timeoutSec) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const param = urlParams.get('timeout');
+      if (param) {
+        const parsed = parseInt(param, 10);
+        if (!isNaN(parsed) && parsed > 0) {
+          timeoutSec = parsed;
+          sessionStorage.setItem('active_idle_timeout_sec', timeoutSec.toString());
+        }
+      }
+    }
+
+    if (!timeoutSec || isNaN(timeoutSec)) {
+      timeoutSec = 5 * 60; // 5 minutes default
+    }
+
+    const idleTimeoutMs = timeoutSec * 1000;
+    
+    let warningSecs = 30;
+    if (timeoutSec <= 10) {
+      warningSecs = 0; // No warning for ultra-short testing timeouts
+    } else if (timeoutSec <= 40) {
+      warningSecs = 5; // 5 seconds warning
+    } else if (timeoutSec <= 90) {
+      warningSecs = 10; // 10 seconds warning
+    }
+
+    const warnBeforeMs = warningSecs * 1000;
+
+    return {
+      idleTimeoutMs,
+      warnBeforeMs,
+      warningSecs
+    };
+  };
+
+  const { idleTimeoutMs, warnBeforeMs, warningSecs } = getTimeoutConfig();
+
   const [showWarning, setShowWarning] = useState(false);
-  const [countdown,   setCountdown]   = useState(WARNING_SECS);
+  const [countdown,   setCountdown]   = useState(warningSecs);
 
   // Refs — mutations here never cause re-renders, so no stale-closure issues
   const lastActivityRef  = useRef(Date.now());
@@ -40,6 +82,10 @@ export default function IdleTimeoutHandler() {
     clearInterval(countdownRef.current);
     warningShownRef.current = false;
     setShowWarning(false);
+    
+    // Set the session expired flag in localStorage so the popup shows
+    localStorage.setItem('sessionExpired', 'true');
+    
     dispatchRef.current(logout());
     navigateRef.current('/login?reason=inactivity');
   };
@@ -53,7 +99,7 @@ export default function IdleTimeoutHandler() {
       warningShownRef.current = false;
       clearInterval(countdownRef.current);
       setShowWarning(false);
-      setCountdown(WARNING_SECS);
+      setCountdown(warningSecs);
     }
   };
 
@@ -65,7 +111,7 @@ export default function IdleTimeoutHandler() {
       clearInterval(countdownRef.current);
       warningShownRef.current = false;
       setShowWarning(false);
-      setCountdown(WARNING_SECS);
+      setCountdown(warningSecs);
       return;
     }
 
@@ -82,16 +128,16 @@ export default function IdleTimeoutHandler() {
     tickRef.current = setInterval(() => {
       const idleMs = Date.now() - lastActivityRef.current;
 
-      // ── Hard logout at exactly 5 min ──
-      if (idleMs >= IDLE_TIMEOUT_MS) {
+      // ── Hard logout ──
+      if (idleMs >= idleTimeoutMs) {
         performLogout();
         return;
       }
 
-      // ── Show warning at 4 min 30 sec ──
-      if (idleMs >= IDLE_TIMEOUT_MS - WARN_BEFORE_MS && !warningShownRef.current) {
+      // ── Show warning ──
+      if (warningSecs > 0 && idleMs >= idleTimeoutMs - warnBeforeMs && !warningShownRef.current) {
         warningShownRef.current = true;
-        setCountdown(WARNING_SECS);
+        setCountdown(warningSecs);
         setShowWarning(true);
 
         // Start per-second countdown display
@@ -124,7 +170,7 @@ export default function IdleTimeoutHandler() {
     warningShownRef.current = false;
     clearInterval(countdownRef.current);
     setShowWarning(false);
-    setCountdown(WARNING_SECS);
+    setCountdown(warningSecs);
   };
 
   // ── "Sign Out Now" button ─────────────────────────────────────────────
@@ -134,7 +180,7 @@ export default function IdleTimeoutHandler() {
   if (!isAuthenticated || !showWarning) return null;
 
   // ── Warning Modal ─────────────────────────────────────────────────────
-  const pct = (countdown / WARNING_SECS) * 360;
+  const pct = warningSecs > 0 ? (countdown / warningSecs) * 360 : 0;
 
   return (
     <>

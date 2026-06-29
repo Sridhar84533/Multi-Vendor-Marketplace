@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import { useDispatch, useSelector } from 'react-redux';
 import { loadUser } from './redux/authSlice';
 import IdleTimeoutHandler from './components/IdleTimeoutHandler';
+import SessionExpiredPopup from './components/SessionExpiredPopup';
 
 // Components
 import Navbar from './components/Navbar/Navbar';
@@ -89,6 +90,8 @@ function AppLayout() {
     <>
       {/* Global idle-timeout watcher — logs out after 5 min of inactivity */}
       <IdleTimeoutHandler />
+      {/* Floating session expiration banner above the screen */}
+      <SessionExpiredPopup />
       <Routes>
       {/* ── Admin Routes (no Navbar / Footer) ── */}
       <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
